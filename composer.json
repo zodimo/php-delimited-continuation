@@ -1,6 +1,7 @@
 {
   "name": "zodimo/dcf",
   "type": "library",
+  "license": "mit",
   "version": "0.0.1",
   "autoload": {
     "psr-4": {
@@ -26,7 +27,6 @@
     "phpstan/phpstan": "^1.11",
     "friendsofphp/php-cs-fixer": "^3.62"
   },
-
   "scripts": {
     "test": [
       "Composer\\Config::disableProcessTimeout",
