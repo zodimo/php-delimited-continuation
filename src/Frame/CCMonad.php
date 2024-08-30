@@ -60,9 +60,13 @@ class CCMonad
         return new CCMonad(fn ($k) => $this->run(SeqService::pushSeg(Frame::create($e2))($k)));
     }
 
-    public function run(Seq $seq): P
+    /**
+     * This is how you provide the continuation K.
+     * Use the parameter K to represent the expected K in the closures.
+     */
+    public function run(Seq $k): P
     {
-        return call_user_func($this->f, $seq);
+        return call_user_func($this->f, $k);
     }
 
     public static function newPrompt(): CCMonad
