@@ -1,5 +1,6 @@
 {
   "name": "zodimo/dcf",
+  "description": "Framework for delimited continuations",
   "type": "library",
   "license": "mit",
   "version": "0.0.1",
