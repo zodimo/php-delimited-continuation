@@ -68,6 +68,19 @@ class KleisliIO implements Arrow
     }
 
     /**
+     * @template _INPUT
+     * @template _OUPUT
+     *
+     * @param callable(_INPUT):_OUPUT $f
+     *
+     * @return KleisliIO<IOMonad, _INPUT, _OUPUT, mixed>
+     */
+    public static function liftPure(callable $f): KleisliIO
+    {
+        return KleisliIO::arr(fn ($x) => IOMonad::pure(call_user_func($f, $x)));
+    }
+
+    /**
      * @return KleisliIO<IOMonad, M, M, mixed>
      */
     public static function id(): KleisliIO
@@ -95,7 +108,7 @@ class KleisliIO implements Arrow
      *
      * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, mixed>
      */
-    public static function impure($f): KleisliIO
+    public static function liftImpure($f): KleisliIO
     {
         /**
          * @var callable(_INPUT):IOMonad<_OUTPUT, mixed>
