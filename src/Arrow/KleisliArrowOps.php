@@ -203,4 +203,44 @@ class KleisliArrowOps
 
         return KleisliIO::arr($func);
     }
+
+    /**
+     * @template _INPUT
+     * @template _OUTPUT
+     * @template _CHECKERR
+     * @template _BODYERR
+     *
+     * @param KleisliIO<IOMonad, _INPUT,bool, _CHECKERR>   $check
+     * @param KleisliIO<IOMonad, _INPUT,_OUTPUT, _BODYERR> $body
+     *
+     * @return KleisliIO<IOMonad, _INPUT,_OUTPUT, _BODYERR|_CHECKERR>
+     */
+    public static function whileDo(KleisliIO $check, KleisliIO $body): KleisliIO
+    {
+        /**
+         * @var callable(_INPUT):IOMonad<_OUTPUT, _BODYERR|_CHECKERR>
+         */
+        $func = function ($value) use ($check, $body) {
+            $a = $value;
+            while (true) {
+                $checkResult = $check->run($a);
+                if ($checkResult->isFailure()) {
+                    return $checkResult;
+                }
+                if ($checkResult->unwrapSuccess(fn ($_) => false)) {
+                    $bodyResult = $body->run($a);
+                    if ($bodyResult->isFailure()) {
+                        return $bodyResult;
+                    }
+                    $a = $bodyResult->unwrapSuccess(fn ($_) => $a);
+                } else {
+                    break;
+                }
+            }
+
+            return IOMonad::pure($a);
+        };
+
+        return KleisliIO::arr($func);
+    }
 }

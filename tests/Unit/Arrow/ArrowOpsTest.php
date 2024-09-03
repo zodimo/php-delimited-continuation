@@ -87,4 +87,15 @@ class ArrowOpsTest extends TestCase
         $expectedResult = 98;
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testWhileDo()
+    {
+        $check = ArrowF::arr(fn (int $x) => $x < 10);
+        $body = ArrowF::arr(fn (int $x) => $x + 2);
+
+        $arrow = ArrowOps::whileDo($check, $body);
+        $result = $arrow->run(0);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result);
+    }
 }

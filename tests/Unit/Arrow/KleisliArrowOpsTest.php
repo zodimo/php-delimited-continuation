@@ -112,4 +112,18 @@ class KleisliArrowOpsTest extends TestCase
 
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testWhileDo()
+    {
+        $funcCheck = fn (int $x) => IOMonad::pure($x < 10);
+        $funcBody = fn (int $x) => IOMonad::pure($x + 2);
+
+        $check = KleisliIO::arr($funcCheck);
+        $body = KleisliIO::arr($funcBody);
+
+        $arrow = KleisliArrowOps::whileDo($check, $body);
+        $result = $arrow->run(0);
+        $expectedResult = IOMonad::pure(10);
+        $this->assertEquals($expectedResult, $result);
+    }
 }

@@ -199,4 +199,29 @@ class ArrowOps
 
         return $arrowClass::arr($func);
     }
+
+    /**
+     * @template _M
+     * @template _INPUT
+     * @template _OUTPUT
+     *
+     * @param Arrow<_M, _INPUT,bool>    $check
+     * @param Arrow<_M, _INPUT,_OUTPUT> $body
+     *
+     * @return Arrow<_M, _INPUT,_OUTPUT>
+     */
+    public static function whileDo(Arrow $check, Arrow $body): Arrow
+    {
+        $arrowClass = get_class($check);
+        $func = function ($value) use ($check, $body) {
+            $a = $value;
+            while ($check->run($a)) {
+                $a = $body->run($a);
+            }
+
+            return $a;
+        };
+
+        return $arrowClass::arr($func);
+    }
 }
