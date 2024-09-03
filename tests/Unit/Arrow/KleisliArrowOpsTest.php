@@ -19,9 +19,9 @@ class KleisliArrowOpsTest extends TestCase
 {
     public function testFirst()
     {
-        $func = fn (int $x) => IOMonad::pure($x + 10);
+        $func = fn (int $x) => $x + 10;
 
-        $kleisliArrow = KleisliIO::arr($func);
+        $kleisliArrow = KleisliIO::liftPure($func);
         $arrowFirst = KleisliArrowOps::first($kleisliArrow);
         $result = $arrowFirst->run(Tuple::create(15, 'Joe'));
         $expectedResult = IOMonad::pure(Tuple::create(25, 'Joe'));
@@ -30,8 +30,8 @@ class KleisliArrowOpsTest extends TestCase
 
     public function testSecond()
     {
-        $func = fn (int $x) => IOMonad::pure($x + 10);
-        $kleisliArrow = KleisliIO::arr($func);
+        $func = fn (int $x) => $x + 10;
+        $kleisliArrow = KleisliIO::liftPure($func);
         $arrowSecond = KleisliArrowOps::second($kleisliArrow);
         $result = $arrowSecond->run(Tuple::create('Joe', 15));
         $expectedResult = IOMonad::pure(Tuple::create('Joe', 25));
@@ -42,11 +42,11 @@ class KleisliArrowOpsTest extends TestCase
     {
         // f >>> g = g . f
         // g after f
-        $funcF = fn (int $x) => IOMonad::pure($x + 10);
-        $funcG = fn (int $x) => IOMonad::pure($x * 10);
+        $funcF = fn (int $x) => $x + 10;
+        $funcG = fn (int $x) => $x * 10;
 
-        $kleisliArrowF = KleisliIO::arr($funcF);
-        $kleisliArrowG = KleisliIO::arr($funcG);
+        $kleisliArrowF = KleisliIO::liftPure($funcF);
+        $kleisliArrowG = KleisliIO::liftPure($funcG);
 
         $arrowComposed = KleisliArrowOps::compose($kleisliArrowF, $kleisliArrowG);
         $result = $arrowComposed->run(10);
@@ -56,11 +56,11 @@ class KleisliArrowOpsTest extends TestCase
 
     public function testMerge()
     {
-        $funcF = fn (int $x) => IOMonad::pure($x + 10);
-        $funcG = fn (int $x) => IOMonad::pure($x * 10);
+        $funcF = fn (int $x) => $x + 10;
+        $funcG = fn (int $x) => $x * 10;
 
-        $kleisliArrowF = KleisliIO::arr($funcF);
-        $kleisliArrowG = KleisliIO::arr($funcG);
+        $kleisliArrowF = KleisliIO::liftPure($funcF);
+        $kleisliArrowG = KleisliIO::liftPure($funcG);
         $arrowMerged = KleisliArrowOps::merge($kleisliArrowF, $kleisliArrowG);
         $result = $arrowMerged->run(Tuple::create(20, 30));
         $expectedResult = IOMonad::pure(Tuple::create(30, 300));
@@ -69,11 +69,11 @@ class KleisliArrowOpsTest extends TestCase
 
     public function testSplit()
     {
-        $funcF = fn (int $x) => IOMonad::pure($x + 10);
-        $funcG = fn (int $x) => IOMonad::pure($x * 10);
+        $funcF = fn (int $x) => $x + 10;
+        $funcG = fn (int $x) => $x * 10;
 
-        $kleisliArrowF = KleisliIO::arr($funcF);
-        $kleisliArrowG = KleisliIO::arr($funcG);
+        $kleisliArrowF = KleisliIO::liftPure($funcF);
+        $kleisliArrowG = KleisliIO::liftPure($funcG);
         $arrowSplit = KleisliArrowOps::split($kleisliArrowF, $kleisliArrowG);
         $result = $arrowSplit->run(50);
         $expectedResult = IOMonad::pure(Tuple::create(60, 500));
@@ -82,13 +82,13 @@ class KleisliArrowOpsTest extends TestCase
 
     public function testIfThenElseTrue()
     {
-        $funcCond = fn (int $x) => IOMonad::pure(10 == $x);
-        $funcThen = fn (int $x) => IOMonad::pure($x + 2);
-        $funcElse = fn (int $x) => IOMonad::pure($x - 2);
+        $funcCond = fn (int $x) => 10 == $x;
+        $funcThen = fn (int $x) => $x + 2;
+        $funcElse = fn (int $x) => $x - 2;
 
-        $cond = KleisliIO::arr($funcCond);
-        $then = KleisliIO::arr($funcThen);
-        $else = KleisliIO::arr($funcElse);
+        $cond = KleisliIO::liftPure($funcCond);
+        $then = KleisliIO::liftPure($funcThen);
+        $else = KleisliIO::liftPure($funcElse);
 
         $arrow = KleisliArrowOps::ifThenElse($cond, $then, $else);
         $result = $arrow->run(10);
@@ -98,13 +98,13 @@ class KleisliArrowOpsTest extends TestCase
 
     public function testIfThenElseFalse()
     {
-        $funcCond = fn (int $x) => IOMonad::pure(10 == $x);
-        $funcThen = fn (int $x) => IOMonad::pure($x + 2);
-        $funcElse = fn (int $x) => IOMonad::pure($x - 2);
+        $funcCond = fn (int $x) => 10 == $x;
+        $funcThen = fn (int $x) => $x + 2;
+        $funcElse = fn (int $x) => $x - 2;
 
-        $cond = KleisliIO::arr($funcCond);
-        $then = KleisliIO::arr($funcThen);
-        $else = KleisliIO::arr($funcElse);
+        $cond = KleisliIO::liftPure($funcCond);
+        $then = KleisliIO::liftPure($funcThen);
+        $else = KleisliIO::liftPure($funcElse);
 
         $arrow = KleisliArrowOps::ifThenElse($cond, $then, $else);
         $result = $arrow->run(100);
@@ -115,11 +115,11 @@ class KleisliArrowOpsTest extends TestCase
 
     public function testWhileDo()
     {
-        $funcCheck = fn (int $x) => IOMonad::pure($x < 10);
-        $funcBody = fn (int $x) => IOMonad::pure($x + 2);
+        $funcCheck = fn (int $x) => $x < 10;
+        $funcBody = fn (int $x) => $x + 2;
 
-        $check = KleisliIO::arr($funcCheck);
-        $body = KleisliIO::arr($funcBody);
+        $check = KleisliIO::liftPure($funcCheck);
+        $body = KleisliIO::liftPure($funcBody);
 
         $arrow = KleisliArrowOps::whileDo($check, $body);
         $result = $arrow->run(0);
@@ -129,16 +129,16 @@ class KleisliArrowOpsTest extends TestCase
 
     public function testArrayFill1000()
     {
-        $funcCheck = fn (array $x) => IOMonad::pure(count($x) < 1000);
+        $funcCheck = fn (array $x) => count($x) < 1000;
         $funcBody = function (array $x) {
             $size = count($x);
             $x[] = $size;
 
-            return IOMonad::pure($x);
+            return $x;
         };
 
-        $check = KleisliIO::arr($funcCheck);
-        $body = KleisliIO::arr($funcBody);
+        $check = KleisliIO::liftPure($funcCheck);
+        $body = KleisliIO::liftPure($funcBody);
 
         $arrow = KleisliArrowOps::whileDo($check, $body);
 

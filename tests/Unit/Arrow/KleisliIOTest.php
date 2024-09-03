@@ -54,9 +54,9 @@ class KleisliIOTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    public function testImpureWithSuccess()
+    public function testLiftPure()
     {
-        $arrow = KleisliIO::impure(fn ($x) => $x + 1);
+        $arrow = KleisliIO::liftPure(fn ($x) => $x + 1);
         $result = $arrow->run(10);
 
         $expectedResult = IOMonad::pure(11);
@@ -64,10 +64,20 @@ class KleisliIOTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    public function testImpureWithFailure()
+    public function testLiftImpureWithSuccess()
+    {
+        $arrow = KleisliIO::liftImpure(fn ($x) => $x + 1);
+        $result = $arrow->run(10);
+
+        $expectedResult = IOMonad::pure(11);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testLiftImpureWithFailure()
     {
         $exception = new \RuntimeException('oops');
-        $arrow = KleisliIO::impure(function ($_) use ($exception) { throw $exception; });
+        $arrow = KleisliIO::liftImpure(function ($_) use ($exception) { throw $exception; });
         $result = $arrow->run(10);
 
         $expectedResult = IOMonad::fail($exception)->unwrapFailure(fn ($_) => new \RuntimeException('not this... '));
