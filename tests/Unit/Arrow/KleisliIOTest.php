@@ -19,14 +19,12 @@ class KleisliIOTest extends TestCase
     {
         $func = fn ($a) => IOMonad::pure($a);
 
-        // is an arrow in io...
         $arrow = KleisliIO::arr($func);
         $this->assertInstanceOf(KleisliIO::class, $arrow);
     }
 
     public function testCanCreateWithId()
     {
-        // is an arrow in io...
         $arrow = KleisliIO::id();
         $this->assertInstanceOf(KleisliIO::class, $arrow);
     }
@@ -38,7 +36,6 @@ class KleisliIOTest extends TestCase
          */
         $func = fn (int $a) => IOMonad::pure($a);
 
-        // is an arrow in io...
         $arrow = KleisliIO::arr($func);
         $result = $arrow->run(10);
 
@@ -49,12 +46,32 @@ class KleisliIOTest extends TestCase
 
     public function testCanCallFromId()
     {
-        // is an arrow in io...
         $arrow = KleisliIO::id();
         $result = $arrow->run(10);
 
         $expectedResult = IOMonad::pure(10);
 
         $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testImpureWithSuccess()
+    {
+        $arrow = KleisliIO::impure(fn ($x) => $x + 1);
+        $result = $arrow->run(10);
+
+        $expectedResult = IOMonad::pure(11);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testImpureWithFailure()
+    {
+        $exception = new \RuntimeException('oops');
+        $arrow = KleisliIO::impure(function ($_) use ($exception) { throw $exception; });
+        $result = $arrow->run(10);
+
+        $expectedResult = IOMonad::fail($exception)->unwrapFailure(fn ($_) => new \RuntimeException('not this... '));
+
+        $this->assertEquals($expectedResult, $result->unwrapFailure(fn ($_) => new \RuntimeException('also not this..')));
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Arrow;
 
-use Zodimo\BaseReturn\Result;
-
 /**
  * it assumes that a handles exists to perform A->E[B].
  *
@@ -97,16 +95,16 @@ class KleisliIO implements Arrow
      *
      * @return KleisliIO<IOMonad, _B, _C, mixed>
      */
-    public function impure($f): KleisliIO
+    public static function impure($f): KleisliIO
     {
         /**
          * @var callable(_B):IOMonad<_C, mixed>
          */
         $try = function ($a) use ($f) {
             try {
-                return IOMonad::pure(Result::succeed(call_user_func($f, $a)));
+                return IOMonad::pure(call_user_func($f, $a));
             } catch (\Throwable $e) {
-                return IOMonad::pure(Result::fail($e));
+                return IOMonad::fail($e);
             }
         };
 

@@ -69,4 +69,53 @@ class IOMonad implements Monad
     {
         return new self(Result::succeed($a));
     }
+
+    /**
+     * @template _E
+     *
+     * @param _E $e
+     *
+     * @return IOMonad<mixed, _E>>
+     */
+    public static function fail($e): Monad
+    {
+        return new self(Result::fail($e));
+    }
+
+    /**
+     * give access to the Result.
+     */
+    public function isSuccess(): bool
+    {
+        return $this->_result->isSuccess();
+    }
+
+    public function isFailure(): bool
+    {
+        return $this->_result->isFailure();
+    }
+
+    /**
+     * For testing.
+     *
+     * @param callable(E):A $onFailure
+     *
+     * @return A
+     */
+    public function unwrapSuccess(callable $onFailure)
+    {
+        return $this->_result->unwrap($onFailure);
+    }
+
+    /**
+     *  For testing.
+     *
+     * @param callable(A):E $onSuccess
+     *
+     * @return E
+     */
+    public function unwrapFailure(callable $onSuccess)
+    {
+        return $this->_result->unwrapFailure($onSuccess);
+    }
 }
