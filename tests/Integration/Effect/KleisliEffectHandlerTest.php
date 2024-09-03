@@ -98,4 +98,29 @@ class KleisliEffectHandlerTest extends TestCase
         $expectedResult = IOMonad::pure(Tuple::create(60, 500));
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testTheCallStack()
+    {
+        // sum 0... 1000
+        $funcF = function (int $x) {
+            return IOMonad::pure($x + 1);
+        };
+
+        $effectAddOne = KleisliEffect::arr($funcF);
+
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrowOneComposed = KleisliEffect::id();
+
+        foreach (range(0, 9) as $_) {
+            $arrowOneComposed = KleisliEffect::compose($arrowOneComposed, $effectAddOne);
+        }
+        $composedArrow = $handler->handle($arrowOneComposed, $runtime);
+        $result = $composedArrow->run(0);
+        $expectedResult = IOMonad::pure(10);
+        $this->assertEquals($expectedResult, $result);
+        // print_r($arrowOneComposed);
+        $this->assertEquals(1, 1);
+    }
 }

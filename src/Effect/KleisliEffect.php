@@ -12,7 +12,7 @@ use Zodimo\DCF\Arrow\Tuple;
  * @template OUTPUT
  * @template ERR
  */
-class KleisliEffect implements KleisliArrowEffect
+class KleisliEffect implements KleisliEffectInterface
 {
     private const namespace = 'kleisli-effect';
     private Operation $operation;
@@ -35,13 +35,13 @@ class KleisliEffect implements KleisliArrowEffect
     /**
      * F must also be an effect.. not just a deferred closure ?
      *
-     * @template _IN
-     * @template _OUT
+     * @template _INPUT
+     * @template _OUTPUT
      * @template _ERR
      *
-     * @param callable(_IN):IOMonad<_OUT, _ERR> $f
+     * @param callable(_INPUT):IOMonad<_OUTPUT, _ERR> $f
      *
-     * @return KleisliEffect<_IN, _OUT, _ERR>
+     * @return KleisliEffect<_INPUT, _OUTPUT, _ERR>
      */
     public static function arr($f): self
     {
@@ -65,15 +65,6 @@ class KleisliEffect implements KleisliArrowEffect
      */
 
     /**
-     * first :: a b c -> a (b,d) (c,d).
-     * first = (*** id).
-     *
-     * A piping method first that takes an arrow between two types and
-     * converts it into an arrow between tuples. The first elements in
-     * the tuples represent the portion of the input and output that is altered,
-     * while the second elements are a third type u describing an unaltered
-     * portion that bypasses the computation.
-     *
      * @template _INPUT
      * @template _OUTPUT
      * @template _ERR
@@ -106,16 +97,16 @@ class KleisliEffect implements KleisliArrowEffect
     }
 
     /**
-     * @template _B
-     * @template _C
-     * @template _D
-     * @template _EF
-     * @template _EG
+     * @template _INPUT
+     * @template _OUTPUTF
+     * @template _OUTPUTG
+     * @template _ERRF
+     * @template _ERRG
      *
-     * @param KleisliEffect<_B, _C, _EF>  $effectF
-     * @param KleisliEffect< _C, _D, _EG> $effectG
+     * @param KleisliEffect<_INPUT, _OUTPUTF, _ERRF>   $effectF
+     * @param KleisliEffect<_OUTPUTF, _OUTPUTG, _ERRG> $effectG
      *
-     * @return KleisliEffect<_B, _D, _EF|_EG>
+     * @return KleisliEffect<_INPUT, _OUTPUTG, _ERRF|_ERRG>
      */
     public static function compose(KleisliEffect $effectF, KleisliEffect $effectG): self
     {
@@ -125,17 +116,17 @@ class KleisliEffect implements KleisliArrowEffect
     }
 
     /**
-     * @template _B
-     * @template __B
-     * @template _C
-     * @template __C
-     * @template _EF
-     * @template _EG
+     * @template _INPUTF
+     * @template _INPUTG
+     * @template _OUTPUTF
+     * @template _OUTPUTG
+     * @template _ERRF
+     * @template _ERRG
      *
-     * @param KleisliEffect< _B, _C, _EF>   $effectF
-     * @param KleisliEffect< __B, __C, _EG> $effectG
+     * @param KleisliEffect< _INPUTF, _OUTPUTF, _ERRF> $effectF
+     * @param KleisliEffect< _INPUTG, _OUTPUTG, _ERRG> $effectG
      *
-     * @return KleisliEffect< Tuple<_B, __B>, Tuple<_C,  __C>, _EF|_EG>
+     * @return KleisliEffect< Tuple<_INPUTF, _INPUTG>, Tuple<_OUTPUTF,  _OUTPUTG>, _ERRF|_ERRG>
      */
     public static function merge(KleisliEffect $effectF, KleisliEffect $effectG): self
     {
@@ -145,16 +136,16 @@ class KleisliEffect implements KleisliArrowEffect
     }
 
     /**
-     * @template _B
-     * @template _C
-     * @template __C
-     * @template _EF
-     * @template _EG
+     * @template _INPUT
+     * @template _OUTPUTF
+     * @template _OUTPUTG
+     * @template _ERRF
+     * @template _ERRG
      *
-     * @param KleisliEffect<  _B, _C, _EF>  $effectF
-     * @param KleisliEffect<  _B, __C, _EG> $effectG
+     * @param KleisliEffect<  _INPUT, _OUTPUTF, _ERRF> $effectF
+     * @param KleisliEffect<  _INPUT, _OUTPUTG, _ERRG> $effectG
      *
-     * @return KleisliEffect<  _B,  Tuple<_C,  __C>, _EF|_EG>
+     * @return KleisliEffect<  _INPUT,  Tuple<_OUTPUTF,  _OUTPUTG>, _ERRF|_ERRG>
      */
     public static function split(KleisliEffect $effectF, KleisliEffect $effectG): self
     {

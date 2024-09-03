@@ -6,10 +6,10 @@ namespace Zodimo\DCF\Effect;
 
 /**
  * @template INPUT
- * @template OUPUT
+ * @template OUTPUT
  * @template ERR
  */
-interface KleisliArrowEffect
+interface KleisliEffectInterface
 {
     /**
      * @param int|string $name

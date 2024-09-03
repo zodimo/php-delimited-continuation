@@ -11,18 +11,18 @@ use Zodimo\DCF\Arrow\KleisliIO;
 /**
  * reify the kleisli arrow from effect.
  */
-class KleisliEffectHandler implements KleisliArrowEffectHandler
+class KleisliEffectHandler implements KleisliEffectHandlerInterface
 {
     /**
      * @template INPUT
-     * @template OUPUT
+     * @template OUTPUT
      * @template ERR
      *
-     * @param KleisliArrowEffect<INPUT,OUPUT,ERR> $effect
+     * @param KleisliEffectInterface<INPUT,OUTPUT,ERR> $effect
      *
-     * @return KleisliIO<IOMonad,INPUT,OUPUT,ERR>
+     * @return KleisliIO<IOMonad,INPUT,OUTPUT,ERR>
      */
-    public function handle(KleisliArrowEffect $effect, Runtime $runtime): KleisliIO
+    public function handle(KleisliEffectInterface $effect, Runtime $runtime): KleisliIO
     {
         $tag = $effect->getTag();
 

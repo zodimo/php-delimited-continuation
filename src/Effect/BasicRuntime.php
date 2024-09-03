@@ -11,12 +11,12 @@ use Zodimo\DCF\Arrow\KleisliIO;
 class BasicRuntime implements Runtime
 {
     /**
-     * @var array<string, KleisliArrowEffectHandler>
+     * @var array<string, KleisliEffectHandlerInterface>
      */
     private array $handlers;
 
     /**
-     * @param array<string, KleisliArrowEffectHandler> $handlers
+     * @param array<string, KleisliEffectHandlerInterface> $handlers
      */
     private function __construct(array $handlers)
     {
@@ -24,7 +24,7 @@ class BasicRuntime implements Runtime
     }
 
     /**
-     * @param array<string, KleisliArrowEffectHandler> $handlers
+     * @param array<string, KleisliEffectHandlerInterface> $handlers
      */
     public static function create(array $handlers)
     {
@@ -36,11 +36,11 @@ class BasicRuntime implements Runtime
      * @template _OUTPUT
      * @template _ERR
      *
-     * @param KleisliArrowEffect<_INPUT, _OUTPUT, _ERR> $effect
+     * @param KleisliEffectInterface<_INPUT, _OUTPUT, _ERR> $effect
      *
      * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ERR>
      */
-    public function perform(KleisliArrowEffect $effect)
+    public function perform(KleisliEffectInterface $effect)
     {
         $tag = $effect->getTag();
         $runtime = $this;
@@ -60,7 +60,7 @@ class BasicRuntime implements Runtime
     /**
      * @param class-string $effectClass
      *
-     * @return Option<KleisliArrowEffectHandler>
+     * @return Option<KleisliEffectHandlerInterface>
      */
     public function getHandlerForEffect(string $effectClass): Option
     {
