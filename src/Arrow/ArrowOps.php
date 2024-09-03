@@ -170,4 +170,33 @@ class ArrowOps
 
         return $arrowClass::arr($func);
     }
+
+    /**
+     * @template _M
+     * @template _INPUT
+     * @template _OUTPUT
+     *
+     * @param Arrow<_M, _INPUT, bool>    $cond
+     * @param Arrow<_M, _INPUT, _OUTPUT> $then
+     * @param Arrow<_M, _INPUT, _OUTPUT> $else
+     *
+     * @return Arrow<_M, _INPUT, _OUTPUT>
+     */
+    public static function ifThenElse(Arrow $cond, Arrow $then, Arrow $else): Arrow
+    {
+        $arrowClass = get_class($cond);
+
+        /**
+         * @var callable(_INPUT):_OUTPUT
+         */
+        $func = function ($input) use ($cond, $then, $else) {
+            if ($cond->run($input)) {
+                return $then->run($input);
+            }
+
+            return $else->run($input);
+        };
+
+        return $arrowClass::arr($func);
+    }
 }

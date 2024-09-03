@@ -63,4 +63,28 @@ class ArrowOpsTest extends TestCase
         $expectedResult = Tuple::create(60, 500);
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testIfThenElseTrue()
+    {
+        $cond = ArrowF::arr(fn (int $x) => 10 == $x);
+        $then = ArrowF::arr(fn (int $x) => $x + 2);
+        $else = ArrowF::arr(fn (int $x) => $x - 2);
+
+        $arrow = ArrowOps::ifThenElse($cond, $then, $else);
+        $result = $arrow->run(10);
+        $expectedResult = 12;
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testIfThenElseFalse()
+    {
+        $cond = ArrowF::arr(fn (int $x) => 10 == $x);
+        $then = ArrowF::arr(fn (int $x) => $x + 2);
+        $else = ArrowF::arr(fn (int $x) => $x - 2);
+
+        $arrow = ArrowOps::ifThenElse($cond, $then, $else);
+        $result = $arrow->run(100);
+        $expectedResult = 98;
+        $this->assertEquals($expectedResult, $result);
+    }
 }

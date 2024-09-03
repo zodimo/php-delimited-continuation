@@ -157,7 +157,7 @@ class KleisliArrowOps
      *
      * @return KleisliIO<IOMonad, _B,  Tuple<_C,  __C>, _EF|_EG>
      */
-    public static function split(Arrow $f, Arrow $g)
+    public static function split(Arrow $f, Arrow $g): KleisliIO
     {
         /**
          * 1:1 translation
@@ -168,5 +168,39 @@ class KleisliArrowOps
         return KleisliIO::arr(fn ($b) => IOMonad::pure(Tuple::create($b, $b)))->andThen(
             KleisliArrowOps::merge($f, $g)
         );
+    }
+
+    /**
+     * @template _INPUT
+     * @template _OUTPUT
+     * @template _CONDERR
+     * @template _THENERR
+     * @template _ELSEERR
+     *
+     * @param KleisliIO<IOMonad, _INPUT, bool, _CONDERR>    $cond
+     * @param KleisliIO<IOMonad, _INPUT, _OUTPUT, _THENERR> $then
+     * @param KleisliIO<IOMonad, _INPUT, _OUTPUT, _ELSEERR> $else
+     *
+     * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ELSEERR|_THENERR>
+     */
+    public static function ifThenElse(KleisliIO $cond, KleisliIO $then, KleisliIO $else): KleisliIO
+    {
+        /**
+         * @var callable(_INPUT):IOMonad<_OUTPUT, _ELSEERR|_THENERR>
+         */
+        $func = function ($input) use ($cond, $then, $else) {
+            return $cond->run($input)->match(
+                function ($condResult) use ($input, $then, $else) {
+                    if ($condResult) {
+                        return $then->run($input);
+                    }
+
+                    return $else->run($input);
+                },
+                fn ($err) => IOMonad::fail($err)
+            );
+        };
+
+        return KleisliIO::arr($func);
     }
 }

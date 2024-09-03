@@ -79,4 +79,37 @@ class KleisliArrowOpsTest extends TestCase
         $expectedResult = IOMonad::pure(Tuple::create(60, 500));
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testIfThenElseTrue()
+    {
+        $funcCond = fn (int $x) => IOMonad::pure(10 == $x);
+        $funcThen = fn (int $x) => IOMonad::pure($x + 2);
+        $funcElse = fn (int $x) => IOMonad::pure($x - 2);
+
+        $cond = KleisliIO::arr($funcCond);
+        $then = KleisliIO::arr($funcThen);
+        $else = KleisliIO::arr($funcElse);
+
+        $arrow = KleisliArrowOps::ifThenElse($cond, $then, $else);
+        $result = $arrow->run(10);
+        $expectedResult = IOMonad::pure(12);
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testIfThenElseFalse()
+    {
+        $funcCond = fn (int $x) => IOMonad::pure(10 == $x);
+        $funcThen = fn (int $x) => IOMonad::pure($x + 2);
+        $funcElse = fn (int $x) => IOMonad::pure($x - 2);
+
+        $cond = KleisliIO::arr($funcCond);
+        $then = KleisliIO::arr($funcThen);
+        $else = KleisliIO::arr($funcElse);
+
+        $arrow = KleisliArrowOps::ifThenElse($cond, $then, $else);
+        $result = $arrow->run(100);
+        $expectedResult = IOMonad::pure(98);
+
+        $this->assertEquals($expectedResult, $result);
+    }
 }
