@@ -98,4 +98,23 @@ class ArrowOpsTest extends TestCase
         $expectedResult = 10;
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testArrayFill1000()
+    {
+        $funcCheck = fn (array $x) => count($x) < 1000;
+        $funcBody = function (array $x) {
+            $size = count($x);
+            $x[] = $size;
+
+            return $x;
+        };
+
+        $check = ArrowF::arr($funcCheck);
+        $body = ArrowF::arr($funcBody);
+
+        $arrow = ArrowOps::whileDo($check, $body);
+
+        $result = $arrow->run([]);
+        $this->assertEquals(1000, count($result));
+    }
 }

@@ -126,4 +126,24 @@ class KleisliArrowOpsTest extends TestCase
         $expectedResult = IOMonad::pure(10);
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testArrayFill1000()
+    {
+        $funcCheck = fn (array $x) => IOMonad::pure(count($x) < 1000);
+        $funcBody = function (array $x) {
+            $size = count($x);
+            $x[] = $size;
+
+            return IOMonad::pure($x);
+        };
+
+        $check = KleisliIO::arr($funcCheck);
+        $body = KleisliIO::arr($funcBody);
+
+        $arrow = KleisliArrowOps::whileDo($check, $body);
+
+        // @phpstan-ignore argument.type
+        $result = $arrow->run([])->unwrapSuccess(fn ($_) => []);
+        $this->assertEquals(1000, count($result));
+    }
 }
