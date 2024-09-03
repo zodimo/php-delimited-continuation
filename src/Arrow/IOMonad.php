@@ -118,4 +118,20 @@ class IOMonad implements Monad
     {
         return $this->_result->unwrapFailure($onSuccess);
     }
+
+    /**
+     * @template OUTPUT
+     *
+     * @param callable(VALUE):OUTPUT $onSuccess
+     * @param callable(ERR):OUTPUT   $onFailure
+     *
+     * @return OUTPUT
+     */
+    public function match(callable $onSuccess, callable $onFailure)
+    {
+        return $this->_result->match(
+            $onSuccess,
+            $onFailure
+        );
+    }
 }
