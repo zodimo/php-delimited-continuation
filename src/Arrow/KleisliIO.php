@@ -7,19 +7,19 @@ namespace Zodimo\DCF\Arrow;
 /**
  * it assumes that a handles exists to perform A->E[B].
  *
- * @template A
- * @template B
- * @template C
- * @template E
+ * @template M
+ * @template INPUT
+ * @template OUTPUT
+ * @template ERR
  *
- * @implements Arrow<KleisliIO, B, C>
+ * @implements Arrow<KleisliIO, INPUT, OUTPUT>
  */
 class KleisliIO implements Arrow
 {
     private $f;
 
     /**
-     * @param callable(B):IOMonad<C,E> $f
+     * @param callable(INPUT):IOMonad<OUTPUT,ERR> $f
      */
     private function __construct($f)
     {
@@ -30,19 +30,19 @@ class KleisliIO implements Arrow
      * instance Monad m => Monad (Kleisli m a) where
      * Kleisli f >>= k = Kleisli $ \x -> f x >>= \a -> runKleisli (k a) x.
      *
-     * @template D
-     * @template _E
+     * @template _OUTPUTK
+     * @template _ERRK
      *
-     * @param KleisliIO<IOMonad, C,D, _E> $k
+     * @param KleisliIO<IOMonad, OUTPUT,_OUTPUTK, _ERRK> $k
      *
-     * @return KleisliIO<IOMonad, B,D, _E|E>
+     * @return KleisliIO<IOMonad, INPUT,_OUTPUTK, _ERRK|ERR>
      */
     public function andThen(KleisliIO $k): KleisliIO
     {
         $that = $this;
 
         /**
-         * @var callable(B):IOMonad<D, mixed> $func
+         * @var callable(INPUT):IOMonad<_OUTPUTK, mixed> $func
          */
         $func = function ($input) use ($that, $k) {
             return $that->run($input)->flatmap(fn ($value) => $k->run($value));
@@ -54,13 +54,13 @@ class KleisliIO implements Arrow
     /**
      * f = B=>M[C].
      *
-     * @template _B
-     * @template _C
-     * @template _E
+     * @template _INPUT
+     * @template _OUPUT
+     * @template _ERR
      *
-     * @param callable(_B):IOMonad<_C, _E> $f
+     * @param callable(_INPUT):IOMonad<_OUPUT, _ERR> $f
      *
-     * @return KleisliIO<IOMonad, _B, _C, _E>
+     * @return KleisliIO<IOMonad, _INPUT, _OUPUT, _ERR>
      */
     public static function arr(callable $f): KleisliIO
     {
@@ -68,7 +68,7 @@ class KleisliIO implements Arrow
     }
 
     /**
-     * @return KleisliIO<IOMonad, A, A, mixed>
+     * @return KleisliIO<IOMonad, M, M, mixed>
      */
     public static function id(): KleisliIO
     {
@@ -78,9 +78,9 @@ class KleisliIO implements Arrow
     }
 
     /**
-     * @param B $value
+     * @param INPUT $value
      *
-     * @return IOMonad<C, E>
+     * @return IOMonad<OUTPUT, ERR>
      */
     public function run($value)
     {
@@ -88,17 +88,17 @@ class KleisliIO implements Arrow
     }
 
     /**
-     * @template _B
-     * @template _C
+     * @template _INPUT
+     * @template _OUTPUT
      *
-     * @param callable(_B):_C $f
+     * @param callable(_INPUT):_OUTPUT $f
      *
-     * @return KleisliIO<IOMonad, _B, _C, mixed>
+     * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, mixed>
      */
     public static function impure($f): KleisliIO
     {
         /**
-         * @var callable(_B):IOMonad<_C, mixed>
+         * @var callable(_INPUT):IOMonad<_OUTPUT, mixed>
          */
         $try = function ($a) use ($f) {
             try {

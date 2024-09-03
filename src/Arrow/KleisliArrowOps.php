@@ -44,7 +44,6 @@ class KleisliArrowOps
             return $arrow->run($input)->flatmap(fn ($c) => IOMonad::pure(Tuple::create($c, $d)));
         };
 
-        // @phpstan-ignore return.type
         return KleisliIO::arr($func);
     }
 
@@ -72,7 +71,6 @@ class KleisliArrowOps
             return $arrow->run($input)->flatmap(fn ($c) => IOMonad::pure(Tuple::create($d, $c)));
         };
 
-        // @phpstan-ignore return.type
         return KleisliIO::arr($func);
     }
 

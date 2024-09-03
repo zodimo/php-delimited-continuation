@@ -5,36 +5,36 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Arrow;
 
 /**
- * @template A
+ * @template VALUE
  */
 interface Monad
 {
     /**
-     * @template B
+     * @template OUTPUTF
      *
-     * @param callable(A):Monad<B> $f
+     * @param callable(VALUE):Monad<OUTPUTF> $f
      *
-     * @return Monad<B>
+     * @return Monad<OUTPUTF>
      */
     public function flatmap(callable $f): Monad;
 
     /**
      * Monadic return or applicative pure.
      *
-     * @template _A
+     * @template _VALUE
      *
-     * @param _A $a
+     * @param _VALUE $a
      *
-     * @return Monad<_A>
+     * @return Monad<_VALUE>
      */
     public static function pure($a): Monad;
 
     /**
-     * @template B
+     * @template OUTPUTF
      *
-     * @param callable(A):B $f
+     * @param callable(VALUE):OUTPUTF $f
      *
-     * @return Monad<B>
+     * @return Monad<OUTPUTF>
      */
     public function fmap(callable $f): Monad;
 }

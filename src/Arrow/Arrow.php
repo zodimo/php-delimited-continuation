@@ -5,31 +5,31 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Arrow;
 
 /**
- * @template A
- * @template B
- * @template C
+ * @template M
+ * @template INPUT
+ * @template OUTPUT
  */
 interface Arrow
 {
     /**
-     * @template INPUT
-     * @template OUTPUT
+     * @template _INPUT
+     * @template _OUTPUT
      *
-     * @param callable(INPUT):OUTPUT $f
+     * @param callable(_INPUT):_OUTPUT $f
      *
-     * @return Arrow<mixed, INPUT, OUTPUT>
+     * @return Arrow<M, _INPUT, _OUTPUT>
      */
     public static function arr(callable $f): Arrow;
 
     /**
-     * @return Arrow<A, B, B>
+     * @return Arrow<M, INPUT, INPUT>
      */
     public static function id(): Arrow;
 
     /**
-     * @param B $value
+     * @param INPUT $value
      *
-     * @return C
+     * @return OUTPUT
      */
     public function run($value);
 }

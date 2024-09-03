@@ -16,20 +16,20 @@ class ArrowOps
      * while the second elements are a third type u describing an unaltered
      * portion that bypasses the computation.
      *
-     * @template _A
-     * @template _B
-     * @template _C
+     * @template _M
+     * @template _INPUT
+     * @template _OUTPUT
      *
-     * @param Arrow<_A, _B, _C> $arrow
+     * @param Arrow<_M, _INPUT, _OUTPUT> $arrow
      *
-     * @return Arrow<_A, Tuple<_B, mixed>, Tuple<_C, mixed>>
+     * @return Arrow<_M, Tuple<_INPUT, mixed>, Tuple<_OUTPUT, mixed>>
      */
     public static function first(Arrow $arrow): Arrow
     {
         $arrowClass = get_class($arrow);
 
         /**
-         * @var callable(Tuple<_B, mixed>):Tuple<_C, mixed> $func
+         * @var callable(Tuple<_INPUT, mixed>):Tuple<_OUTPUT, mixed> $func
          */
         $func = function (Tuple $args) use ($arrow) {
             $input = $args->fst();
@@ -38,6 +38,7 @@ class ArrowOps
             return Tuple::create($arrow->run($input), $d);
         };
 
+        // @phpstan-ignore return.type
         return $arrowClass::arr($func);
     }
 
@@ -45,20 +46,20 @@ class ArrowOps
      * second :: a b c -> a (d,b) (d,c)
      * second = (id ***).
      *
-     * @template _A
-     * @template _B
-     * @template _C
+     * @template _M
+     * @template _INPUT
+     * @template _OUTPUT
      *
-     * @param Arrow<_A, _B, _C> $arrow
+     * @param Arrow<_M, _INPUT, _OUTPUT> $arrow
      *
-     * @return Arrow<_A, Tuple<mixed, _B>, Tuple<mixed, _C>>
+     * @return Arrow<_M, Tuple<mixed, _INPUT>, Tuple<mixed, _OUTPUT>>
      */
     public static function second(Arrow $arrow): Arrow
     {
         $arrowClass = get_class($arrow);
 
         /**
-         * @var callable(Tuple<mixed, _B>):Tuple<mixed, _C> $func
+         * @var callable(Tuple<mixed, _INPUT>):Tuple<mixed, _OUTPUT> $func
          */
         $func = function (Tuple $args) use ($arrow) {
             $input = $args->snd();
@@ -67,6 +68,7 @@ class ArrowOps
             return Tuple::create($d, $arrow->run($input));
         };
 
+        // @phpstan-ignore return.type
         return $arrowClass::arr($func);
     }
 
@@ -79,22 +81,22 @@ class ArrowOps
      * (>>>) :: Category cat => cat a b -> cat b c -> cat a c
      * f >>> g = g . f
      *
-     * @template _A
-     * @template _B
-     * @template _C
-     * @template _D
+     * @template _M
+     * @template _INPUT
+     * @template _OUTPUTF
+     * @template _OUTPUTG
      *
-     * @param Arrow<_A, _B, _C> $f
-     * @param Arrow<_A, _C, _D> $g
+     * @param Arrow<_M, _INPUT, _OUTPUTF>   $f
+     * @param Arrow<_M, _OUTPUTF, _OUTPUTG> $g
      *
-     * @return Arrow<_A, _B, _D>
+     * @return Arrow<_M, _INPUT, _OUTPUTG>
      */
     public static function compose(Arrow $f, Arrow $g)
     {
         $arrowClass = get_class($f);
 
         /**
-         * @var callable(_B):_D $func
+         * @var callable(_INPUT):_OUTPUTG $func
          */
         $func = function ($input) use ($f, $g) {
             return $g->run($f->run($input));
@@ -112,23 +114,23 @@ class ArrowOps
      * f *** g = first f >>> arr swap >>> first g >>> arr swap
      *  where swap ~(x,y) = (y,x)
      *
-     * @template _A
-     * @template _B
-     * @template __B
-     * @template _C
-     * @template __C
+     * @template _M
+     * @template _INPUTF
+     * @template _INPUTG
+     * @template _OUTPUTF
+     * @template _OUTPUTG
      *
-     * @param Arrow<_A, _B, _C>   $f
-     * @param Arrow<_A, __B, __C> $g
+     * @param Arrow<_M, _INPUTF, _OUTPUTF> $f
+     * @param Arrow<_M, _INPUTG, _OUTPUTG> $g
      *
-     * @return Arrow<_A, Tuple<_B, __B>, Tuple<_C,  __C>>
+     * @return Arrow<_M, Tuple<_INPUTF, _INPUTG>, Tuple<_OUTPUTF,  _OUTPUTG>>
      */
     public static function merge(Arrow $f, Arrow $g): Arrow
     {
         $arrowClass = get_class($f);
 
         /**
-         * @var callable(Tuple<_B, __B>):Tuple<_C,  __C> $func
+         * @var callable(Tuple<_INPUTF, _INPUTG>):Tuple<_OUTPUTF,  _OUTPUTG> $func
          */
         $func = function (Tuple $args) use ($f, $g) {
             $fInput = $args->fst();
@@ -145,22 +147,22 @@ class ArrowOps
      * (&&&) :: a b c -> a b c' -> a b (c,c')
      * f &&& g = arr (\b -> (b,b)) >>> f *** g.
      *
-     * @template _A
-     * @template _B
-     * @template _C
-     * @template __C
+     * @template _M
+     * @template _INPUT
+     * @template _OUTPUTF
+     * @template _OUTPUTG
      *
-     * @param Arrow<_A, _B, _C>  $f
-     * @param Arrow<_A, _B, __C> $g
+     * @param Arrow<_M, _INPUT, _OUTPUTF> $f
+     * @param Arrow<_M, _INPUT, _OUTPUTG> $g
      *
-     * @return Arrow<_A, _B,  Tuple<_C,  __C>>
+     * @return Arrow<_M, _INPUT,  Tuple<_OUTPUTF,  _OUTPUTG>>
      */
     public static function split(Arrow $f, Arrow $g)
     {
         $arrowClass = get_class($f);
 
         /**
-         * @var callable(_B):Tuple<_C,  __C> $func
+         * @var callable(_INPUT):Tuple<_OUTPUTF,  _OUTPUTG> $func
          */
         $func = function ($input) use ($f, $g) {
             return Tuple::create($f->run($input), $g->run($input));

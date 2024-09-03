@@ -10,15 +10,15 @@ use Zodimo\BaseReturn\Result;
  * A represent the value of a successful computation
  * E represent the value of a failed computation.
  *
- * @template A
- * @template E
+ * @template VALUE
+ * @template ERR
  *
- * @implements Monad<Result<A, E>>
+ * @implements Monad<Result<VALUE, ERR>>
  */
 class IOMonad implements Monad
 {
     /**
-     * @var Result<A, E>
+     * @var Result<VALUE, ERR>
      */
     private Result $_result;
 
@@ -28,12 +28,12 @@ class IOMonad implements Monad
     }
 
     /**
-     * @template B
-     * @template _E
+     * @template _OUTPUTF
+     * @template _ERRF
      *
-     * @param callable(A):IOMonad<B, _E> $f
+     * @param callable(VALUE):IOMonad<_OUTPUTF, _ERRF> $f
      *
-     * @return IOMonad<B, _E>>|IOMonad<A, E>>
+     * @return IOMonad<_OUTPUTF, _ERRF>|IOMonad<VALUE, ERR>
      */
     public function flatmap(callable $f): Monad
     {
@@ -44,11 +44,11 @@ class IOMonad implements Monad
     }
 
     /**
-     * @template B
+     * @template _OUTPUTF
      *
-     * @param callable(A):B $f
+     * @param callable(VALUE):_OUTPUTF $f
      *
-     * @return IOMonad<B, E>>
+     * @return IOMonad<_OUTPUTF, ERR>
      */
     public function fmap(callable $f): Monad
     {
@@ -59,11 +59,11 @@ class IOMonad implements Monad
     }
 
     /**
-     * @template _A
+     * @template _VALUE
      *
-     * @param _A $a
+     * @param _VALUE $a
      *
-     * @return IOMonad<_A, mixed>>
+     * @return IOMonad<_VALUE, mixed>
      */
     public static function pure($a): Monad
     {
@@ -71,11 +71,11 @@ class IOMonad implements Monad
     }
 
     /**
-     * @template _E
+     * @template _ERR
      *
-     * @param _E $e
+     * @param _ERR $e
      *
-     * @return IOMonad<mixed, _E>>
+     * @return IOMonad<mixed, _ERR>
      */
     public static function fail($e): Monad
     {
@@ -98,9 +98,9 @@ class IOMonad implements Monad
     /**
      * For testing.
      *
-     * @param callable(E):A $onFailure
+     * @param callable(ERR):VALUE $onFailure
      *
-     * @return A
+     * @return VALUE
      */
     public function unwrapSuccess(callable $onFailure)
     {
@@ -110,9 +110,9 @@ class IOMonad implements Monad
     /**
      *  For testing.
      *
-     * @param callable(A):E $onSuccess
+     * @param callable(VALUE):ERR $onSuccess
      *
-     * @return E
+     * @return ERR
      */
     public function unwrapFailure(callable $onSuccess)
     {

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Arrow;
 
 /**
- * @template A
- * @template B
- * @template C
+ * @template M
+ * @template INPUT
+ * @template OUTPUT
  *
- * @implements Arrow<A, B, C>
+ * @implements Arrow<M, INPUT, OUTPUT>
  */
 class ArrowF implements Arrow
 {
@@ -24,12 +24,12 @@ class ArrowF implements Arrow
     }
 
     /**
-     * @template INPUT
-     * @template OUTPUT
+     * @template _INPUT
+     * @template _OUTPUT
      *
-     * @param callable(INPUT):OUTPUT $f
+     * @param callable(_INPUT):_OUTPUT $f
      *
-     * @return ArrowF<ArrowF, INPUT, OUTPUT>
+     * @return ArrowF<ArrowF, _INPUT, _OUTPUT>
      */
     public static function arr(callable $f): ArrowF
     {
@@ -37,9 +37,9 @@ class ArrowF implements Arrow
     }
 
     /**
-     * @param B $value
+     * @param INPUT $value
      *
-     * @return C
+     * @return OUTPUT
      */
     public function run($value)
     {
@@ -47,12 +47,12 @@ class ArrowF implements Arrow
     }
 
     /**
-     * @return ArrowF<ArrowF, B, B>
+     * @return ArrowF<ArrowF, INPUT, INPUT>
      */
     public static function id(): Arrow
     {
         /**
-         * @var callable(B):B
+         * @var callable(INPUT):INPUT
          */
         $id = function ($x) {
             return $x;
