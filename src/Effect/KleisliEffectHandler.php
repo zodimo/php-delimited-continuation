@@ -7,6 +7,7 @@ namespace Zodimo\DCF\Effect;
 use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\KleisliArrowOps;
 use Zodimo\DCF\Arrow\KleisliIO;
+use Zodimo\DCF\Arrow\KleisliIOComposition;
 
 /**
  * reify the kleisli arrow from effect.
@@ -57,9 +58,14 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 $effects = $effect->getArg('effects');
                 $arrows = array_map(fn ($eff) => $runtime->perform($eff), $effects);
 
-                return array_reduce($arrows, function ($carry, $item) {
-                    return KleisliArrowOps::compose($carry, $item);
-                }, KleisliIO::id());
+                /**
+                 * @var KleisliIOComposition $composition
+                 */
+                $composition = array_reduce($arrows, function ($acc, $item) {
+                    return $acc->addArrow($item);
+                }, KleisliIOComposition::id());
+
+                return $composition->asKleisliIO();
 
             case 'kleisli-effect.merge':
                 $arrowF = $runtime->perform($effect->getArg('effectF'));
