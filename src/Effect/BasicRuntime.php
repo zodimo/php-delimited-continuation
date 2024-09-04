@@ -36,11 +36,11 @@ class BasicRuntime implements Runtime
      * @template _OUTPUT
      * @template _ERR
      *
-     * @param KleisliEffectInterface<_INPUT, _OUTPUT, _ERR> $effect
+     * @param EffectInterface<_INPUT, _OUTPUT, _ERR> $effect
      *
      * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ERR>
      */
-    public function perform(KleisliEffectInterface $effect)
+    public function perform(EffectInterface $effect)
     {
         $tag = $effect->getTag();
         $runtime = $this;

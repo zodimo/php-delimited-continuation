@@ -14,9 +14,9 @@ interface KleisliEffectHandlerInterface
      * @template OUTPUT
      * @template ERR
      *
-     * @param KleisliEffectInterface<INPUT,OUTPUT,ERR> $effect
+     * @param EffectInterface<INPUT,OUTPUT,ERR> $effect
      *
      * @return KleisliIO<IOMonad,INPUT,OUTPUT,ERR>
      */
-    public function handle(KleisliEffectInterface $effect, Runtime $runtime): KleisliIO;
+    public function handle(EffectInterface $effect, Runtime $runtime): KleisliIO;
 }

@@ -9,7 +9,7 @@ namespace Zodimo\DCF\Effect;
  * @template OUTPUT
  * @template ERR
  */
-interface KleisliEffectInterface
+interface EffectInterface
 {
     /**
      * @param int|string $name

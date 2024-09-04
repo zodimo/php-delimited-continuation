@@ -12,7 +12,7 @@ use Zodimo\DCF\Arrow\Tuple;
  * @template OUTPUT
  * @template ERR
  */
-class KleisliEffect implements KleisliEffectInterface
+class KleisliEffect implements EffectInterface
 {
     private const namespace = 'kleisli-effect';
     private Operation $operation;
