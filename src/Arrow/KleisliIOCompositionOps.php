@@ -30,4 +30,21 @@ class KleisliIOCompositionOps
     {
         return $f->andThen($g);
     }
+
+    /**
+     * @template _A
+     * @template _B
+     * @template _C
+     * @template _EF
+     * @template _EG
+     *
+     * @param KleisliIOComposition< _A, _B, _EF> $f
+     * @param KleisliIO<IOMonad,_B, _C, _EG>     $arrow
+     *
+     * @return KleisliIOComposition<_A, _C, _EF|_EG>
+     */
+    public static function appendArrow(KleisliIOComposition $f, KleisliIO $arrow): KleisliIOComposition
+    {
+        return $f->andThen(KleisliIOComposition::intializeWith($arrow));
+    }
 }

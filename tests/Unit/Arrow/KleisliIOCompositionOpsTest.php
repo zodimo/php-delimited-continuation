@@ -30,4 +30,17 @@ class KleisliIOCompositionOpsTest extends TestCase
         $expectedResult = IOMonad::pure(200);
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testAppendArrow()
+    {
+        $arrowFF = KleisliIO::liftPure(fn (int $x) => $x + 10);
+        $arrowFG = KleisliIO::liftPure(fn (int $x) => $x * 10);
+
+        $compoFF = KleisliIOComposition::intializeWith($arrowFF);
+
+        $arrowComposed = KleisliIOCompositionOps::appendArrow($compoFF, $arrowFG);
+        $result = $arrowComposed->run(10);
+        $expectedResult = IOMonad::pure(200);
+        $this->assertEquals($expectedResult, $result);
+    }
 }
