@@ -107,4 +107,26 @@ class KleisliIOComposition implements Arrow
     {
         return KleisliIO::arr(fn ($value) => $this->run($value));
     }
+
+    /**
+     * instance Monad m => Monad (Kleisli m a) where
+     * Kleisli f >>= k = Kleisli $ \x -> f x >>= \a -> runKleisli (k a) x.
+     *
+     * @template _OUTPUTK
+     * @template _ERRK
+     *
+     * @param KleisliIOComposition<OUTPUT,_OUTPUTK, _ERRK> $k
+     *
+     * @return KleisliIOComposition<INPUT,_OUTPUTK, _ERRK|ERR>
+     */
+    public function andThen(KleisliIOComposition $k): KleisliIOComposition
+    {
+        $that = $this;
+        // just append all the arrows contained in K into the current
+        foreach ($k->arrows as $arrow) {
+            $that = $that->addArrow($arrow);
+        }
+
+        return $that;
+    }
 }

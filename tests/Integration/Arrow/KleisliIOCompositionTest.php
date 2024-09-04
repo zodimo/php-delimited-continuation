@@ -67,6 +67,22 @@ class KleisliIOCompositionTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
+    public function testAndThen()
+    {
+        $arrow1 = KleisliIO::liftPure(fn (int $x) => $x + 10);
+        $arrow2 = KleisliIO::liftPure(fn (int $x) => $x * 2);
+
+        $composition1 = KleisliIOComposition::id()->addArrow($arrow1)->addArrow($arrow2);
+        $composition2 = KleisliIOComposition::id()->addArrow($arrow2)->addArrow($arrow1);
+
+        $arrow = $composition1->andThen($composition2);
+        $result = $arrow->run(10); // comp1 (10 + 10) * 2 = 40 , comp2 = (40*2)+10 = 90
+
+        $expectedResult = IOMonad::pure(90);
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
     public function testStackSafety()
     {
         $arrow1 = KleisliIO::liftPure(fn (int $x) => $x + 1);
