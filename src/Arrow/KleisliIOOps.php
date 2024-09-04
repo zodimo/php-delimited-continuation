@@ -83,16 +83,16 @@ class KleisliIOOps
      * (>>>) :: Category cat => cat a b -> cat b c -> cat a c
      * f >>> g = g . f
      *
+     * @template _A
      * @template _B
      * @template _C
-     * @template _D
      * @template _EF
      * @template _EG
      *
-     * @param KleisliIO<IOMonad, _B, _C, _EF> $f
-     * @param KleisliIO<IOMonad, _C, _D, _EG> $g
+     * @param KleisliIO<IOMonad, _A, _B, _EF> $f
+     * @param KleisliIO<IOMonad, _B, _C, _EG> $g
      *
-     * @return KleisliIO<IOMonad, _B, _D, _EF|_EG>
+     * @return KleisliIO<IOMonad, _A, _C, _EF|_EG>
      */
     public static function compose(KleisliIO $f, KleisliIO $g)
     {
@@ -108,17 +108,17 @@ class KleisliIOOps
      * f *** g = first f >>> arr swap >>> first g >>> arr swap
      *  where swap ~(x,y) = (y,x)
      *
-     * @template _B
-     * @template __B
-     * @template _C
-     * @template __C
+     * @template _BF
+     * @template _BG
+     * @template _CF
+     * @template _CG
      * @template _EF
      * @template _EG
      *
-     * @param KleisliIO<IOMonad, _B, _C, _EF>   $f
-     * @param KleisliIO<IOMonad, __B, __C, _EG> $g
+     * @param KleisliIO<IOMonad, _BF, _CF, _EF> $f
+     * @param KleisliIO<IOMonad, _BG, _CG, _EG> $g
      *
-     * @return KleisliIO<IOMonad, Tuple<_B, __B>, Tuple<_C,  __C>, _EF|_EG>
+     * @return KleisliIO<IOMonad, Tuple<_BF, _BG>, Tuple<_CF,  _CG>, _EF|_EG>
      */
     public static function merge(KleisliIO $f, KleisliIO $g): KleisliIO
     {
@@ -147,15 +147,15 @@ class KleisliIOOps
      * f &&& g = arr (\b -> (b,b)) >>> f *** g.
      *
      * @template _B
-     * @template _C
-     * @template __C
+     * @template _CF
+     * @template _CG
      * @template _EF
      * @template _EG
      *
-     * @param KleisliIO<IOMonad, _B, _C, _EF>  $f
-     * @param KleisliIO<IOMonad, _B, __C, _EG> $g
+     * @param KleisliIO<IOMonad, _B, _CF, _EF> $f
+     * @param KleisliIO<IOMonad, _B, _CG, _EG> $g
      *
-     * @return KleisliIO<IOMonad, _B,  Tuple<_C,  __C>, _EF|_EG>
+     * @return KleisliIO<IOMonad, _B,  Tuple<_CF,  _CG>, _EF|_EG>
      */
     public static function split(Arrow $f, Arrow $g): KleisliIO
     {
