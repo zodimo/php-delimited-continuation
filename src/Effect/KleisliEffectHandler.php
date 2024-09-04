@@ -81,6 +81,16 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 // @phpstan-ignore return.type
                 return KleisliIOOps::split($arrowF, $arrowG);
 
+            case 'kleisli-effect.lift-pure':
+                $f = $effect->getArg('f');
+
+                return KleisliIO::liftPure($f);
+
+            case 'kleisli-effect.lift-impure':
+                $f = $effect->getArg('f');
+
+                return KleisliIO::liftImpure($f);
+
             default:
                 throw new \RuntimeException("KleisliEffectHandler: unknown tag: {$tag}");
         }

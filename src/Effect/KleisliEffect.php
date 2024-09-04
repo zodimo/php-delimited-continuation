@@ -270,6 +270,36 @@ class KleisliEffect implements EffectInterface
         return $this->operation->getTag();
     }
 
+    /**
+     * @template _INPUT
+     * @template _OUTPUT
+     *
+     * @param callable(_INPUT):_OUTPUT $f
+     *
+     * @return KleisliEffect<_INPUT, _OUTPUT, mixed>
+     */
+    public static function liftPure(callable $f): KleisliEffect
+    {
+        $tag = self::createTag('lift-pure');
+
+        return new self(Operation::create($tag)->setArg('f', $f));
+    }
+
+    /**
+     * @template _INPUT
+     * @template _OUTPUT
+     *
+     * @param callable(_INPUT):_OUTPUT $f
+     *
+     * @return KleisliEffect<_INPUT, _OUTPUT, mixed>
+     */
+    public static function liftImpure(callable $f): KleisliEffect
+    {
+        $tag = self::createTag('lift-impure');
+
+        return new self(Operation::create($tag)->setArg('f', $f));
+    }
+
     private static function createTag(string $segment): string
     {
         return self::namespace.'.'.$segment;

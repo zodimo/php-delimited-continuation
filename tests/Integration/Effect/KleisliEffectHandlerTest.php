@@ -144,4 +144,32 @@ class KleisliEffectHandlerTest extends TestCase
         // print_r($arrowOneComposed);
         $this->assertEquals(1, 1);
     }
+
+    public function testCanHandleLiftPure()
+    {
+        $func = fn (int $a) => $a + 10;
+
+        $eff = KleisliEffect::liftPure($func);
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($eff, $runtime);
+        $result = $arrow->run(10);
+        $expectedResult = IOMonad::pure(20);
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testCanHandleLiftImpure()
+    {
+        $func = fn (int $a) => $a + 10;
+
+        $eff = KleisliEffect::liftImpure($func);
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($eff, $runtime);
+        $result = $arrow->run(10);
+        $expectedResult = IOMonad::pure(20);
+        $this->assertEquals($expectedResult, $result);
+    }
 }

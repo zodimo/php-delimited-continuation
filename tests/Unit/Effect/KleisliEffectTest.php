@@ -243,4 +243,22 @@ class KleisliEffectTest extends TestCase
         ];
         $this->assertSame($expectedArgs, $effect->getArgs(), "{$variant}: effects");
     }
+
+    public function testLiftPure()
+    {
+        $fn = fn (int $x) => $x + 10;
+        $effect = KleisliEffect::liftPure($fn);
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.lift-pure', $effect->getTag());
+        $this->assertSame($fn, $effect->getArg('f'));
+    }
+
+    public function testLiftImpure()
+    {
+        $fn = fn (int $x) => $x + 10;
+        $effect = KleisliEffect::liftImpure($fn);
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.lift-impure', $effect->getTag());
+        $this->assertSame($fn, $effect->getArg('f'));
+    }
 }
