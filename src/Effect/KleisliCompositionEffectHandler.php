@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Effect;
 
 use Zodimo\DCF\Arrow\KleisliIOComposition;
+use Zodimo\DCF\Arrow\KleisliIOCompositionOps;
 
 class KleisliCompositionEffectHandler implements KleisliCompositionEffectHandlerInterface
 {
@@ -35,6 +36,12 @@ class KleisliCompositionEffectHandler implements KleisliCompositionEffectHandler
                 $f = $effect->getArg('f');
 
                 return KleisliIOComposition::arr($f);
+
+            case 'kleisli-composition-effect.compose':
+                $arrowF = $runtime->perform($effect->getArg('effectF'));
+                $arrowG = $runtime->perform($effect->getArg('effectG'));
+
+                return KleisliIOCompositionOps::compose($arrowF, $arrowG);
 
             default:
                 throw new \RuntimeException("KleisliCompositionEffectHandler: unknown tag: {$tag}");
