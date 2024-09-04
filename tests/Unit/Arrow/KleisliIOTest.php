@@ -29,7 +29,7 @@ class KleisliIOTest extends TestCase
         $this->assertInstanceOf(KleisliIO::class, $arrow);
     }
 
-    public function testCanCallFromArr()
+    public function testCanRunFromArr()
     {
         /**
          * @var callable(int):IOMonad<int, never> $func
@@ -44,7 +44,7 @@ class KleisliIOTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    public function testCanCallFromId()
+    public function testCanRunFromId()
     {
         $arrow = KleisliIO::id();
         $result = $arrow->run(10);

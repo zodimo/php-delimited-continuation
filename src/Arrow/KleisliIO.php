@@ -81,7 +81,7 @@ class KleisliIO implements Arrow
     }
 
     /**
-     * @return KleisliIO<IOMonad, M, M, mixed>
+     * @return KleisliIO<IOMonad, INPUT, INPUT, mixed>
      */
     public static function id(): KleisliIO
     {
