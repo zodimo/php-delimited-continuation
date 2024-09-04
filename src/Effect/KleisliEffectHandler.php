@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Effect;
 
 use Zodimo\DCF\Arrow\IOMonad;
-use Zodimo\DCF\Arrow\KleisliArrowOps;
 use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Arrow\KleisliIOComposition;
+use Zodimo\DCF\Arrow\KleisliIOOps;
 
 /**
  * reify the kleisli arrow from effect.
@@ -40,19 +40,19 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 $arrow = $runtime->perform($effect->getArg('effect'));
 
                 // @phpstan-ignore return.type
-                return KleisliArrowOps::first($arrow);
+                return KleisliIOOps::first($arrow);
 
             case 'kleisli-effect.second':
                 $arrow = $runtime->perform($effect->getArg('effect'));
 
                 // @phpstan-ignore return.type
-                return KleisliArrowOps::second($arrow);
+                return KleisliIOOps::second($arrow);
 
             case 'kleisli-effect.compose':
                 $arrowF = $runtime->perform($effect->getArg('effectF'));
                 $arrowG = $runtime->perform($effect->getArg('effectG'));
 
-                return KleisliArrowOps::compose($arrowF, $arrowG);
+                return KleisliIOOps::compose($arrowF, $arrowG);
 
             case 'kleisli-effect.composition':
                 $effects = $effect->getArg('effects');
@@ -72,14 +72,14 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 $arrowG = $runtime->perform($effect->getArg('effectG'));
 
                 // @phpstan-ignore return.type
-                return KleisliArrowOps::merge($arrowF, $arrowG);
+                return KleisliIOOps::merge($arrowF, $arrowG);
 
             case 'kleisli-effect.split':
                 $arrowF = $runtime->perform($effect->getArg('effectF'));
                 $arrowG = $runtime->perform($effect->getArg('effectG'));
 
                 // @phpstan-ignore return.type
-                return KleisliArrowOps::split($arrowF, $arrowG);
+                return KleisliIOOps::split($arrowF, $arrowG);
 
             default:
                 throw new \RuntimeException("KleisliEffectHandler: unknown tag: {$tag}");

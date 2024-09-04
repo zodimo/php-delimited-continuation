@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Arrow;
 
-class KleisliArrowOps
+class KleisliIOOps
 {
     /**
      * first :: a b c -> a (b,d) (c,d).
@@ -132,12 +132,12 @@ class KleisliArrowOps
          */
 
         // @phpstan-ignore return.type
-        return KleisliArrowOps::first($f)->andThen(
+        return KleisliIOOps::first($f)->andThen(
             // @phpstan-ignore argument.type
             KleisliIO::arr(fn (Tuple $t) => IOMonad::pure($swap($t)))
         )->andThen(
             // @phpstan-ignore argument.type
-            KleisliArrowOps::first($g)->andThen(KleisliIO::arr(fn (Tuple $t) => IOMonad::pure($swap($t))))
+            KleisliIOOps::first($g)->andThen(KleisliIO::arr(fn (Tuple $t) => IOMonad::pure($swap($t))))
         );
     }
 
@@ -166,7 +166,7 @@ class KleisliArrowOps
          * @phpstan-ignore argument.type
          */
         return KleisliIO::arr(fn ($b) => IOMonad::pure(Tuple::create($b, $b)))->andThen(
-            KleisliArrowOps::merge($f, $g)
+            KleisliIOOps::merge($f, $g)
         );
     }
 

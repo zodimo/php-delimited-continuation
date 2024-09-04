@@ -6,8 +6,8 @@ namespace Zodimo\DCF\Tests\Unit\Arrow;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\DCF\Arrow\IOMonad;
-use Zodimo\DCF\Arrow\KleisliArrowOps;
 use Zodimo\DCF\Arrow\KleisliIO;
+use Zodimo\DCF\Arrow\KleisliIOOps;
 use Zodimo\DCF\Arrow\Tuple;
 
 /**
@@ -15,14 +15,14 @@ use Zodimo\DCF\Arrow\Tuple;
  *
  * @coversNothing
  */
-class KleisliArrowOpsTest extends TestCase
+class KleisliIOOpsTest extends TestCase
 {
     public function testFirst()
     {
         $func = fn (int $x) => $x + 10;
 
         $kleisliArrow = KleisliIO::liftPure($func);
-        $arrowFirst = KleisliArrowOps::first($kleisliArrow);
+        $arrowFirst = KleisliIOOps::first($kleisliArrow);
         $result = $arrowFirst->run(Tuple::create(15, 'Joe'));
         $expectedResult = IOMonad::pure(Tuple::create(25, 'Joe'));
         $this->assertEquals($expectedResult, $result);
@@ -32,7 +32,7 @@ class KleisliArrowOpsTest extends TestCase
     {
         $func = fn (int $x) => $x + 10;
         $kleisliArrow = KleisliIO::liftPure($func);
-        $arrowSecond = KleisliArrowOps::second($kleisliArrow);
+        $arrowSecond = KleisliIOOps::second($kleisliArrow);
         $result = $arrowSecond->run(Tuple::create('Joe', 15));
         $expectedResult = IOMonad::pure(Tuple::create('Joe', 25));
         $this->assertEquals($expectedResult, $result);
@@ -48,7 +48,7 @@ class KleisliArrowOpsTest extends TestCase
         $kleisliArrowF = KleisliIO::liftPure($funcF);
         $kleisliArrowG = KleisliIO::liftPure($funcG);
 
-        $arrowComposed = KleisliArrowOps::compose($kleisliArrowF, $kleisliArrowG);
+        $arrowComposed = KleisliIOOps::compose($kleisliArrowF, $kleisliArrowG);
         $result = $arrowComposed->run(10);
         $expectedResult = IOMonad::pure(200);
         $this->assertEquals($expectedResult, $result);
@@ -61,7 +61,7 @@ class KleisliArrowOpsTest extends TestCase
 
         $kleisliArrowF = KleisliIO::liftPure($funcF);
         $kleisliArrowG = KleisliIO::liftPure($funcG);
-        $arrowMerged = KleisliArrowOps::merge($kleisliArrowF, $kleisliArrowG);
+        $arrowMerged = KleisliIOOps::merge($kleisliArrowF, $kleisliArrowG);
         $result = $arrowMerged->run(Tuple::create(20, 30));
         $expectedResult = IOMonad::pure(Tuple::create(30, 300));
         $this->assertEquals($expectedResult, $result);
@@ -74,7 +74,7 @@ class KleisliArrowOpsTest extends TestCase
 
         $kleisliArrowF = KleisliIO::liftPure($funcF);
         $kleisliArrowG = KleisliIO::liftPure($funcG);
-        $arrowSplit = KleisliArrowOps::split($kleisliArrowF, $kleisliArrowG);
+        $arrowSplit = KleisliIOOps::split($kleisliArrowF, $kleisliArrowG);
         $result = $arrowSplit->run(50);
         $expectedResult = IOMonad::pure(Tuple::create(60, 500));
         $this->assertEquals($expectedResult, $result);
@@ -90,7 +90,7 @@ class KleisliArrowOpsTest extends TestCase
         $then = KleisliIO::liftPure($funcThen);
         $else = KleisliIO::liftPure($funcElse);
 
-        $arrow = KleisliArrowOps::ifThenElse($cond, $then, $else);
+        $arrow = KleisliIOOps::ifThenElse($cond, $then, $else);
         $result = $arrow->run(10);
         $expectedResult = IOMonad::pure(12);
         $this->assertEquals($expectedResult, $result);
@@ -106,7 +106,7 @@ class KleisliArrowOpsTest extends TestCase
         $then = KleisliIO::liftPure($funcThen);
         $else = KleisliIO::liftPure($funcElse);
 
-        $arrow = KleisliArrowOps::ifThenElse($cond, $then, $else);
+        $arrow = KleisliIOOps::ifThenElse($cond, $then, $else);
         $result = $arrow->run(100);
         $expectedResult = IOMonad::pure(98);
 
@@ -121,7 +121,7 @@ class KleisliArrowOpsTest extends TestCase
         $check = KleisliIO::liftPure($funcCheck);
         $body = KleisliIO::liftPure($funcBody);
 
-        $arrow = KleisliArrowOps::whileDo($check, $body);
+        $arrow = KleisliIOOps::whileDo($check, $body);
         $result = $arrow->run(0);
         $expectedResult = IOMonad::pure(10);
         $this->assertEquals($expectedResult, $result);
@@ -140,7 +140,7 @@ class KleisliArrowOpsTest extends TestCase
         $check = KleisliIO::liftPure($funcCheck);
         $body = KleisliIO::liftPure($funcBody);
 
-        $arrow = KleisliArrowOps::whileDo($check, $body);
+        $arrow = KleisliIOOps::whileDo($check, $body);
 
         // @phpstan-ignore argument.type
         $result = $arrow->run([])->unwrapSuccess(fn ($_) => []);
