@@ -53,6 +53,14 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
 
                 return KleisliArrowOps::compose($arrowF, $arrowG);
 
+            case 'kleisli-effect.composition':
+                $effects = $effect->getArg('effects');
+                $arrows = array_map(fn ($eff) => $runtime->perform($eff), $effects);
+
+                return array_reduce($arrows, function ($carry, $item) {
+                    return KleisliArrowOps::compose($carry, $item);
+                }, KleisliIO::id());
+
             case 'kleisli-effect.merge':
                 $arrowF = $runtime->perform($effect->getArg('effectF'));
                 $arrowG = $runtime->perform($effect->getArg('effectG'));
