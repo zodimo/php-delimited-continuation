@@ -48,6 +48,10 @@
     "debug-php": [
       "Composer\\Config::disableProcessTimeout",
       "php -dxdebug.start_with_request=yes "
+    ],
+    "php": [
+      "Composer\\Config::disableProcessTimeout",
+      "php"
     ]
   }
 }
