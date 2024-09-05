@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Tests\Unit\Arrow;
+namespace Zodimo\DCF\Tests\Integration\Arrow;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\DCF\Arrow\ArrowF;

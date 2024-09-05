@@ -261,4 +261,18 @@ class KleisliEffectTest extends TestCase
         $this->assertEquals('kleisli-effect.lift-impure', $effect->getTag());
         $this->assertSame($fn, $effect->getArg('f'));
     }
+
+    public function testBracket()
+    {
+        $baseEffect = KleisliEffect::id();
+        $afterEffect = KleisliEffect::id();
+        $duringEffect = KleisliEffect::id();
+
+        $effect = $baseEffect->bracket($duringEffect, $afterEffect);
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.bracket', $effect->getTag());
+        $this->assertSame($baseEffect, $effect->getArg('this'));
+        $this->assertSame($duringEffect, $effect->getArg('during'));
+        $this->assertSame($afterEffect, $effect->getArg('after'));
+    }
 }
