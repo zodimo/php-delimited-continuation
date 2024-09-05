@@ -154,7 +154,7 @@ class KleisliIOOpsTest extends TestCase
          * each level van fail..
          *  0 = fail
          *  1 = succeed
-         * aquire during release.
+         * acquire during release.
          *
          * 1: 0 0 0 < 0 x x
          * 2: 0 0 1 < 0 x x
@@ -164,24 +164,24 @@ class KleisliIOOpsTest extends TestCase
          * 6: 1 1 0
          * 7: 1 1 1
          *
-         * Schenario: Aquire Failed
+         * Schenario: Acquire Fails
          * Expected Result:
-         * Nothing should happen if aquire failed
+         * Nothing should happen if acquire failed
          */
-        $variant = 'aquire[0] during[x] release[x]';
-        $exception = new \RuntimeException('Could not aquire resource');
+        $variant = 'acquire[0] during[x] release[x]';
+        $exception = new \RuntimeException('Could not acquire resource');
 
-        $aquireFn = function (int $x) use ($exception) {
+        $acquireFn = function (int $x) use ($exception) {
             throw $exception;
         };
 
-        $aquire = KleisliIO::liftImpure($aquireFn);
+        $acquire = KleisliIO::liftImpure($acquireFn);
         $mockDuring = $this->createMock(KleisliIO::class);
         $mockDuring->expects($this->never())->method('run');
         $mockRelease = $this->createMock(KleisliIO::class);
         $mockRelease->expects($this->never())->method('run');
 
-        $arrow = KleisliIOOps::bracket($aquire, $mockDuring, $mockRelease);
+        $arrow = KleisliIOOps::bracket($acquire, $mockDuring, $mockRelease);
         $result = $arrow->run(10);
         $this->assertTrue($result->isFailure(), "{$variant}: isFailure");
         $this->assertSame($exception, $result->unwrapFailure(fn ($_) => new \RuntimeException('Is wasnt a failure')), "{$variant}: isFailure");
@@ -193,7 +193,7 @@ class KleisliIOOpsTest extends TestCase
          * each level van fail..
          *  0 = fail
          *  1 = succeed
-         * aquire during release.
+         * acquire during release.
          *
          * 1: 0 0 0 < 0 x x
          * 2: 0 0 1 < 0 x x
@@ -203,17 +203,17 @@ class KleisliIOOpsTest extends TestCase
          * 6: 1 1 0
          * 7: 1 1 1
          *
-         * Schenario: Aquire Succeeds, During and Release fail
+         * Schenario: Acquire Succeeds, During and Release fail
          * Expected Result:
          * return tuple of results
          * first : during result
          * second : release result
          */
-        $variant = 'aquire[1] during[0] release[0]';
+        $variant = 'acquire[1] during[0] release[0]';
         $exceptionDuring = new \RuntimeException('During expection');
         $exceptionRelease = new \RuntimeException('Release exception');
 
-        $aquireFn = fn (int $x) => $x;
+        $acquireFn = fn (int $x) => $x;
 
         $duringFn = function (int $x) use ($exceptionDuring) {
             throw $exceptionDuring;
@@ -222,11 +222,11 @@ class KleisliIOOpsTest extends TestCase
             throw $exceptionRelease;
         };
 
-        $aquire = KleisliIO::liftPure($aquireFn);
+        $acquire = KleisliIO::liftPure($acquireFn);
         $during = KleisliIO::liftImpure($duringFn);
         $release = KleisliIO::liftImpure($releaseFn);
 
-        $arrow = KleisliIOOps::bracket($aquire, $during, $release);
+        $arrow = KleisliIOOps::bracket($acquire, $during, $release);
         $result = $arrow->run(10);
 
         $expectedResult = IOMonad::pure(Tuple::create(
@@ -244,7 +244,7 @@ class KleisliIOOpsTest extends TestCase
          * each level van fail..
          *  0 = fail
          *  1 = succeed
-         * aquire during release.
+         * acquire during release.
          *
          * 1: 0 0 0 < 0 x x
          * 2: 0 0 1 < 0 x x
@@ -254,27 +254,27 @@ class KleisliIOOpsTest extends TestCase
          * 6: 1 1 0 <<
          * 7: 1 1 1
          *
-         * Schenario: Aquire and During Succeed, Release fails
+         * Schenario: Acquire and During Succeed, Release fails
          * Expected Result:
          * return tuple of results
          * first : during result
          * second : release result
          */
-        $variant = 'aquire[1] during[1] release[0]';
+        $variant = 'acquire[1] during[1] release[0]';
         $exceptionRelease = new \RuntimeException('Release exception');
 
-        $aquireFn = fn (int $x) => $x;
+        $acquireFn = fn (int $x) => $x;
 
         $duringFn = fn (int $x) => $x + 10;
         $releaseFn = function (int $x) use ($exceptionRelease) {
             throw $exceptionRelease;
         };
 
-        $aquire = KleisliIO::liftPure($aquireFn);
+        $acquire = KleisliIO::liftPure($acquireFn);
         $during = KleisliIO::liftImpure($duringFn);
         $release = KleisliIO::liftImpure($releaseFn);
 
-        $arrow = KleisliIOOps::bracket($aquire, $during, $release);
+        $arrow = KleisliIOOps::bracket($acquire, $during, $release);
         $result = $arrow->run(10);
 
         $expectedResult = IOMonad::pure(Tuple::create(
@@ -292,7 +292,7 @@ class KleisliIOOpsTest extends TestCase
          * each level van fail..
          *  0 = fail
          *  1 = succeed
-         * aquire during release.
+         * acquire during release.
          *
          * 1: 0 0 0 < 0 x x
          * 2: 0 0 1 < 0 x x
@@ -302,15 +302,15 @@ class KleisliIOOpsTest extends TestCase
          * 6: 1 1 0
          * 7: 1 1 1 <<
          *
-         * Schenario: Aquire, During and Release Succeed
+         * Schenario: Acquire, During and Release Succeed
          * Expected Result:
          * return tuple of results
          * first : during result
          * second : release result
          */
-        $variant = 'aquire[1] during[1] release[1]';
+        $variant = 'acquire[1] during[1] release[1]';
 
-        $aquireFn = fn (int $x) => $x;
+        $acquireFn = fn (int $x) => $x;
 
         $duringFn = fn (int $x) => $x + 10;
 
@@ -324,11 +324,11 @@ class KleisliIOOpsTest extends TestCase
         ;
         $releaseFnMock->expects($this->once())->method('__invoke')->with(10);
 
-        $aquire = KleisliIO::liftPure($aquireFn);
+        $acquire = KleisliIO::liftPure($acquireFn);
         $during = KleisliIO::liftImpure($duringFn);
         $release = KleisliIO::liftImpure($releaseFnMock);
 
-        $arrow = KleisliIOOps::bracket($aquire, $during, $release);
+        $arrow = KleisliIOOps::bracket($acquire, $during, $release);
         $result = $arrow->run(10);
 
         $expectedResult = IOMonad::pure(Tuple::create(

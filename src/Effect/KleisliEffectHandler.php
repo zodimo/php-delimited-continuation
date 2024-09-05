@@ -91,6 +91,13 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
 
                 return KleisliIO::liftImpure($f);
 
+            case 'kleisli-effect.bracket':
+                $acquire = $runtime->perform($effect->getArg('acquire'));
+                $during = $runtime->perform($effect->getArg('during'));
+                $release = $runtime->perform($effect->getArg('release'));
+
+                return KleisliIOOps::bracket($acquire, $during, $release);
+
             default:
                 throw new \RuntimeException("KleisliEffectHandler: unknown tag: {$tag}");
         }

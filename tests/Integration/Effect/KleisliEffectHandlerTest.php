@@ -172,4 +172,22 @@ class KleisliEffectHandlerTest extends TestCase
         $expectedResult = IOMonad::pure(20);
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testCanHandleBracketHappyPath()
+    {
+        $acquireEffect = KleisliEffect::id();
+        $releaseEffect = KleisliEffect::liftPure(fn ($_) => null);
+        $duringEffect = KleisliEffect::id();
+
+        $effect = $acquireEffect->bracket($duringEffect, $releaseEffect);
+
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($effect, $runtime);
+
+        $result = $arrow->run(10);
+        $expectedResult = IOMonad::pure(Tuple::create(IOMonad::pure(10), IOMonad::pure(null)));
+        $this->assertEquals($expectedResult, $result);
+    }
 }

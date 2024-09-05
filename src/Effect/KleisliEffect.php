@@ -286,6 +286,24 @@ class KleisliEffect implements EffectInterface
     }
 
     /**
+     * @template _INPUT
+     * @template _OUTPUT
+     *
+     * @param callable(_INPUT):_OUTPUT $f
+     *
+     * @return KleisliEffect<_INPUT, _OUTPUT, mixed>
+     */
+    public static function liftImpure(callable $f): KleisliEffect
+    {
+        $tag = self::createTag('lift-impure');
+
+        return new self(Operation::create($tag)->setArg('f', $f));
+    }
+
+    /**
+     * Combinators.
+     */
+    /**
      * @template _OUTPUTG
      * @template _ERRG
      *
@@ -299,18 +317,25 @@ class KleisliEffect implements EffectInterface
     }
 
     /**
-     * @template _INPUT
-     * @template _OUTPUT
+     * @template _OUTPUTF
+     * @template _ERRF
+     * @template _ERRG
      *
-     * @param callable(_INPUT):_OUTPUT $f
+     * @param KleisliEffect<OUTPUT, _OUTPUTF, _ERRF> $during
+     * @param KleisliEffect<OUTPUT, null, _ERRG>     $release
      *
-     * @return KleisliEffect<_INPUT, _OUTPUT, mixed>
+     * @return KleisliEffect<INPUT, _OUTPUTF, _ERRF|_ERRG|ERR>
      */
-    public static function liftImpure(callable $f): KleisliEffect
+    public function bracket(KleisliEffect $during, KleisliEffect $release): KleisliEffect
     {
-        $tag = self::createTag('lift-impure');
+        $tag = self::createTag('bracket');
 
-        return new self(Operation::create($tag)->setArg('f', $f));
+        return new self(
+            Operation::create($tag)
+                ->setArg('acquire', $this)
+                ->setArg('during', $during)
+                ->setArg('release', $release)
+        );
     }
 
     private static function createTag(string $segment): string

@@ -252,33 +252,33 @@ class KleisliIOOps
      * @template _ERRF
      * @template _ERRG
      *
-     * @param KleisliIO<IOMonad,_INPUT, _OUTPUT, _ERR>    $aquire
+     * @param KleisliIO<IOMonad,_INPUT, _OUTPUT, _ERR>    $acquire
      * @param KleisliIO<IOMonad,_OUTPUT, _OUTPUTF, _ERRF> $during
      * @param KleisliIO<IOMonad,_OUTPUT, null, _ERRG>     $release
      *
      * @return KleisliIO<IOMonad,_INPUT, _OUTPUTF, _ERR|_ERRF|_ERRG|\Throwable>
      */
-    public static function bracket(KleisliIO $aquire, KleisliIO $during, KleisliIO $release): KleisliIO
+    public static function bracket(KleisliIO $acquire, KleisliIO $during, KleisliIO $release): KleisliIO
     {
         /**
          * @var callable(_INPUT):IOMonad<_OUTPUTF, _ERR|_ERRF|_ERRG|\Throwable>
          */
-        $func = function ($input) use ($aquire, $during, $release) {
-            $aquireResult = $aquire->run($input);
+        $func = function ($input) use ($acquire, $during, $release) {
+            $acquireResult = $acquire->run($input);
 
-            return $aquireResult->flatmap(
+            return $acquireResult->flatmap(
                 // @phpstan-ignore argument.type
                 // @phpstan-ignore argument.type
-                function ($aquiredResource) use ($during, $release) {
+                function ($acquiredResource) use ($during, $release) {
                     try {
-                        $duringResult = $during->run($aquiredResource);
-                        $releaseResult = $release->run($aquiredResource);
+                        $duringResult = $during->run($acquiredResource);
+                        $releaseResult = $release->run($acquiredResource);
 
                         return IOMonad::pure(Tuple::create($duringResult, $releaseResult));
                     } catch (\Throwable $e) {
                         // fail safe
                         $duringResult = IOMonad::fail($e);
-                        $releaseResult = $release->run($aquiredResource);
+                        $releaseResult = $release->run($acquiredResource);
 
                         return IOMonad::pure(Tuple::create($duringResult, $releaseResult));
                     }
