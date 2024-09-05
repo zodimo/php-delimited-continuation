@@ -52,6 +52,74 @@ class KleisliIO implements Arrow
     }
 
     /**
+     * shortcut for andThen(KleisliIO::arr(f)).
+     *
+     * @template _OUTPUTK
+     * @template _ERRK
+     *
+     * @param callable(OUTPUT):IOMonad<_OUTPUTK, _ERRK> $k
+     *
+     * @return KleisliIO<IOMonad, INPUT,_OUTPUTK, _ERRK|ERR>
+     */
+    public function andThenK(callable $k): KleisliIO
+    {
+        return $this->andThen(KleisliIO::arr($k));
+    }
+
+    /**
+     *   Kleisli f >>= k = Kleisli $ \x -> f x >>= \a -> runKleisli (k a) x.
+     *
+     * @template _OUTPUTK
+     * @template _ERRK
+     *
+     * @param callable(OUTPUT):KleisliIO<IOMonad, INPUT,_OUTPUTK, _ERRK> $k
+     *
+     * @return KleisliIO<IOMonad, INPUT,_OUTPUTK, _ERRK|ERR>
+     */
+    public function flatMap(callable $k): KleisliIO
+    {
+        $that = $this;
+
+        /**
+         * @var callable(INPUT):IOMonad<_OUTPUTK, _ERRK|ERR> $func
+         */
+        $func = function ($x) use ($that, $k) {
+            $result = $that->run($x); // M[B]
+
+            return $result->flatmap(function ($a) use ($k, $x) {
+                return call_user_func($k, $a)->run($x);
+            });
+        };
+
+        return new KleisliIO($func);
+    }
+
+    /**
+     * @template _OUTPUTK
+     * @template _ERRK
+     *
+     * @param callable(OUTPUT):IOMonad<_OUTPUTK, _ERRK> $f
+     *
+     * @return KleisliIO<IOMonad, INPUT,_OUTPUTK, _ERRK|ERR>
+     */
+    public function flatMapK(callable $f): KleisliIO
+    {
+        // same as
+        // return $this->andThen(KleisliIO::arr($f));
+
+        $that = $this;
+
+        /**
+         * @var callable(INPUT):IOMonad<_OUTPUTK, _ERRK|ERR>
+         */
+        $func = function ($input) use ($that, $f) {
+            return $that->run($input)->flatmap($f);
+        };
+
+        return new KleisliIO($func);
+    }
+
+    /**
      * f = B=>M[C].
      *
      * @template _INPUT

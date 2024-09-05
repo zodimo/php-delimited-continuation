@@ -84,4 +84,58 @@ class KleisliIOTest extends TestCase
 
         $this->assertEquals($expectedResult, $result->unwrapFailure(fn ($_) => new \RuntimeException('also not this..')));
     }
+
+    public function testFlatMap()
+    {
+        $arrow = KleisliIO::liftPure(fn ($x) => $x + 5);
+
+        $choice = function (int $x) {
+            /**
+             * You have the option to ignore the x in the return computation.
+             */
+            if ($x < 10) {
+                return KleisliIO::liftPure(fn ($y) => $y + 10);
+            }
+
+            return KleisliIO::liftPure(fn ($y) => $y + 20);
+        };
+
+        $flatmapArrow = $arrow->flatMap($choice);
+
+        $this->assertEquals(IOMonad::pure(12), $flatmapArrow->run(2), '[2] +5 < 10  = [2] + 10');
+        $this->assertEquals(IOMonad::pure(27), $flatmapArrow->run(7), '[7] + 5 > 10 = [7]  + 20');
+    }
+
+    public function testFlatMapK()
+    {
+        $arrow = KleisliIO::liftPure(fn ($x) => $x + 5);
+
+        $func = fn (int $x) => IOMonad::pure($x + 10);
+
+        $flatmapArrow = $arrow->flatMapK($func);
+
+        $this->assertEquals(IOMonad::pure(17), $flatmapArrow->run(2), '[2] +7 + 10 ');
+    }
+
+    public function testAndThenK()
+    {
+        $arrow = KleisliIO::liftPure(fn ($x) => $x + 5);
+
+        $func = fn (int $x) => IOMonad::pure($x + 10);
+
+        $flatmapArrow = $arrow->andThenK($func);
+
+        $this->assertEquals(IOMonad::pure(17), $flatmapArrow->run(2), '[2] +7 + 10 ');
+    }
+
+    public function testAndThen()
+    {
+        $arrow = KleisliIO::liftPure(fn (int $x) => $x + 5);
+
+        $func = fn (int $x) => IOMonad::pure($x + 10);
+
+        $flatmapArrow = $arrow->andThen(KleisliIO::arr($func));
+
+        $this->assertEquals(IOMonad::pure(17), $flatmapArrow->run(2), '[2] +7 + 10 ');
+    }
 }
