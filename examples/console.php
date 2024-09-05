@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use Zodimo\DCF\Arrow\IOMonad;
+use Zodimo\DCF\Arrow\Tuple;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
@@ -39,54 +41,52 @@ $stdoutWriterEffect = fn (string $message) => KleisliEffect::liftImpure(function
  */
 $writeLine = fn (string $message) => $stdoutWriterEffect($message);
 
-KleisliEffect::liftImpure(function (string $message) {
-    $f = null;
-
-    try {
-        $f = fopen('php://output', 'w');
-        $result = fputs($f, $message);
-        if (false === $result) {
-            throw new Exception('Could not read stdin');
-        }
-    } finally {
-        if (is_resource($f)) {
-            fclose($f);
-        }
-    }
-
-    return $result;
-});
-
-/**
- * @var KleisliEffect<string, void, mixed> $readLineEffect
- */
 $readLineEffect = KleisliEffect::liftImpure(function () {
-    $f = null;
+    $result = fopen('php://stdin', 'r');
 
-    try {
-        $f = fopen('php://stdin', 'r');
-        $result = fgets($f);
-        if (false === $result) {
-            throw new Exception('Could not read stdin');
-        }
-    } finally {
-        if (is_resource($f)) {
-            fclose($f);
-        }
+    if (is_resource($result)) {
+        return $result;
     }
 
-    return $result;
-});
+    throw new Exception('Could not read stdin');
+})
+    ->bracket(
+        KleisliEffect::liftImpure(function ($stdin) {
+            $result = fgets($stdin);
+            if (false === $result) {
+                throw new Exception('Could not read stdin');
+            }
+
+            return $result;
+        }),
+        // @phpstan-ignore argument.type
+        KleisliEffect::liftImpure(function ($stdin) {
+            if (is_resource($stdin)) {
+                fclose($stdin);
+            }
+        })
+    )
+;
 
 $programEffect = $writeLine('Please write your name: ')->andThen($readLineEffect);
 
 $runtime = BasicRuntime::create([KleisliEffect::class => new KleisliEffectHandler()]);
-$program = $runtime->perform($programEffect);
-$program->run(null)->match(
-    function (string $name) {
-        echo "I got this: {$name}";
+$programArrow = $runtime->perform($programEffect);
+$programArrow->run(null)->match(
+    function (Tuple $result) {
+        /**
+         * @var Tuple<IOMonad<string, mixed>, IOMonad<null, mixed>> $result
+         */
+        $result->fst()->match(
+            function (string $name) {
+                echo "Hello {$name}!";
+            },
+            function ($_) {
+                echo 'ERROR on first!';
+            }
+        );
     },
     function ($_) {
-        echo 'there was an error';
+        echo 'ERROR !';
     }
 );
