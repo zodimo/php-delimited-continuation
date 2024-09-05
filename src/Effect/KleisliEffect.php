@@ -286,6 +286,19 @@ class KleisliEffect implements EffectInterface
     }
 
     /**
+     * @template _OUTPUTG
+     * @template _ERRG
+     *
+     * @param KleisliEffect<OUTPUT, _OUTPUTG, _ERRG> $effectG
+     *
+     * @return KleisliEffect<INPUT, _OUTPUTG, _ERRG|ERR>
+     */
+    public function andThen(KleisliEffect $effectG): KleisliEffect
+    {
+        return self::compose($this, $effectG);
+    }
+
+    /**
      * @template _INPUT
      * @template _OUTPUT
      *
