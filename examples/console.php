@@ -7,6 +7,32 @@ use Zodimo\DCF\Effect\KleisliEffectHandler;
 
 require __DIR__.'/../vendor/autoload.php';
 
+// how can we make the effect use an effect..
+
+/**
+ * @var KleisliEffect<string, string, mixed> $writeLineEffect
+ */
+$writeLineEffect = KleisliEffect::liftImpure(function (string $message) {
+    $f = null;
+
+    try {
+        $f = fopen('php://output', 'w');
+        $result = fputs($f, $message);
+        if (false === $result) {
+            throw new Exception('Could not read stdin');
+        }
+    } finally {
+        if (is_resource($f)) {
+            fclose($f);
+        }
+    }
+
+    return $result;
+});
+
+/**
+ * @var KleisliEffect<string, void, mixed> $readLineEffect
+ */
 $readLineEffect = KleisliEffect::liftImpure(function () {
     $f = null;
 
@@ -25,9 +51,11 @@ $readLineEffect = KleisliEffect::liftImpure(function () {
     return $result;
 });
 
+$programEffect = $writeLineEffect->andThen($readLineEffect);
+
 $runtime = BasicRuntime::create([KleisliEffect::class => new KleisliEffectHandler()]);
-$readLineArrow = $runtime->perform($readLineEffect);
-$getNameResult = $readLineArrow->run(null)->match(
+$program = $runtime->perform($programEffect);
+$program->run('Please enter you name: ')->match(
     function (string $name) {
         echo "I got this: {$name}";
     },
