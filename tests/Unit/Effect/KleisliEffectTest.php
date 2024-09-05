@@ -271,8 +271,31 @@ class KleisliEffectTest extends TestCase
         $effect = $baseEffect->bracket($duringEffect, $afterEffect);
         $this->assertInstanceOf(KleisliEffect::class, $effect);
         $this->assertEquals('kleisli-effect.bracket', $effect->getTag());
-        $this->assertSame($baseEffect, $effect->getArg('this'));
+        $this->assertSame($baseEffect, $effect->getArg('acquire'));
         $this->assertSame($duringEffect, $effect->getArg('during'));
-        $this->assertSame($afterEffect, $effect->getArg('after'));
+        $this->assertSame($afterEffect, $effect->getArg('release'));
+    }
+
+    public function testFlatmap()
+    {
+        $arrow = KleisliEffect::liftPure(fn ($x) => $x + 5);
+
+        $choice = function (int $x) {
+            /**
+             * You have the option to ignore the x in the return computation.
+             */
+            if ($x < 10) {
+                return KleisliEffect::liftPure(fn ($y) => $y + 10);
+            }
+
+            return KleisliEffect::liftPure(fn ($y) => $y + 20);
+        };
+
+        $flatmapArrow = $arrow->flatMap($choice);
+
+        $this->assertInstanceOf(KleisliEffect::class, $flatmapArrow);
+        $this->assertEquals('kleisli-effect.flatmap', $flatmapArrow->getTag());
+        $this->assertSame($arrow, $flatmapArrow->getArg('effect'), 'flatmap effect');
+        $this->assertSame($choice, $flatmapArrow->getArg('f'), 'flatmap f');
     }
 }

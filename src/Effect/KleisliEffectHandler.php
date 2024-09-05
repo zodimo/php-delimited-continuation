@@ -98,6 +98,14 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
 
                 return KleisliIOOps::bracket($acquire, $during, $release);
 
+            case 'kleisli-effect.flatmap':
+                $thisEffect = $effect->getArg('effect');
+                $thisArrow = $runtime->perform($thisEffect);
+
+                $f = $effect->getArg('f');
+
+                return $thisArrow->flatMap(fn ($value) => $runtime->perform(call_user_func($f, $value)));
+
             default:
                 throw new \RuntimeException("KleisliEffectHandler: unknown tag: {$tag}");
         }

@@ -190,4 +190,30 @@ class KleisliEffectHandlerTest extends TestCase
         $expectedResult = IOMonad::pure(Tuple::create(IOMonad::pure(10), IOMonad::pure(null)));
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testCanHandleFlatmap()
+    {
+        $arrow = KleisliEffect::liftPure(fn ($x) => $x + 5);
+
+        $choice = function (int $x) {
+            /**
+             * You have the option to ignore the x in the return computation.
+             */
+            if ($x < 10) {
+                return KleisliEffect::liftPure(fn ($y) => $y + 10);
+            }
+
+            return KleisliEffect::liftPure(fn ($y) => $y + 20);
+        };
+
+        $effect = $arrow->flatMap($choice);
+
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($effect, $runtime);
+
+        $this->assertEquals(IOMonad::pure(12), $arrow->run(2), '[2] +5 < 10  = [2] + 10');
+        $this->assertEquals(IOMonad::pure(27), $arrow->run(7), '[7] + 5 > 10 = [7]  + 20');
+    }
 }

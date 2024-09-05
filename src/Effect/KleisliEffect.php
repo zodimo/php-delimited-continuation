@@ -301,6 +301,25 @@ class KleisliEffect implements EffectInterface
     }
 
     /**
+     * f(A)=>M B
+     * M == KleisliEffect.
+     *
+     * @template _INPUT
+     * @template _OUTPUT
+     * @template _ERR
+     *
+     * @param callable(_INPUT):KleisliEffect<_INPUT,_OUTPUT, _ERR> $f
+     *
+     * @return KleisliEffect<_INPUT, _OUTPUT, _ERR>
+     */
+    public function flatmap(callable $f): KleisliEffect
+    {
+        $tag = self::createTag('flatmap');
+
+        return new self(Operation::create($tag)->setArg('effect', $this)->setArg('f', $f));
+    }
+
+    /**
      * Combinators.
      */
     /**
@@ -315,6 +334,19 @@ class KleisliEffect implements EffectInterface
     {
         return self::compose($this, $effectG);
     }
+
+    //     /**
+    //  * @template _OUTPUTG
+    //  * @template _ERRG
+    //  *
+    //  * @param callable ():KleisliEffect<OUTPUT, _OUTPUTG, _ERRG> $effectG
+    //  *
+    //  * @return KleisliEffect<INPUT, _OUTPUTG, _ERRG|ERR>
+    //  */
+    // public function andThenK(KleisliEffect $effectG): KleisliEffect
+    // {
+    //     return self::compose($this, $effectG);
+    // }
 
     /**
      * @template _OUTPUTF
