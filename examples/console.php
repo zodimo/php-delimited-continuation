@@ -35,7 +35,7 @@ $stdoutWriterEffect = fn (string $message) => KleisliEffect::liftImpure(function
 ;
 
 /**
- * @var callable(string):KleisliEffect<string, string, mixed> $writeLine
+ * @var callable(string):KleisliEffect<void, string, mixed> $writeLine
  */
 $writeLine = fn (string $message) => $stdoutWriterEffect($message);
 
