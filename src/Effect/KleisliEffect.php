@@ -324,7 +324,7 @@ class KleisliEffect implements EffectInterface
      * @param KleisliEffect<OUTPUT, _OUTPUTF, _ERRF> $during
      * @param KleisliEffect<OUTPUT, null, _ERRG>     $release
      *
-     * @return KleisliEffect<INPUT, _OUTPUTF, _ERRF|_ERRG|ERR>
+     * @return KleisliEffect<INPUT, Tuple<IOMonad<_OUTPUTF, _ERRF>,IOMonad<null,_ERRG>>,ERR>
      */
     public function bracket(KleisliEffect $during, KleisliEffect $release): KleisliEffect
     {

@@ -9,10 +9,37 @@ require __DIR__.'/../vendor/autoload.php';
 
 // how can we make the effect use an effect..
 
+$stdoutWriterEffect = fn (string $message) => KleisliEffect::liftImpure(function () {
+    $result = fopen('php://output', 'w');
+
+    if (is_resource($result)) {
+        return $result;
+    }
+
+    throw new Exception('Could not read stdin');
+})
+    ->bracket(
+        KleisliEffect::liftImpure(function ($stdout) use ($message) {
+            $result = fputs($stdout, $message);
+            if (false === $result) {
+                throw new Exception('Could not read stdin');
+            }
+        }),
+        // @phpstan-ignore argument.type
+        KleisliEffect::liftImpure(function ($stdout) {
+            if (is_resource($stdout)) {
+                fclose($stdout);
+            }
+        })
+    )
+;
+
 /**
- * @var KleisliEffect<string, string, mixed> $writeLineEffect
+ * @var callable(string):KleisliEffect<string, string, mixed> $writeLine
  */
-$writeLineEffect = KleisliEffect::liftImpure(function (string $message) {
+$writeLine = fn (string $message) => $stdoutWriterEffect($message);
+
+KleisliEffect::liftImpure(function (string $message) {
     $f = null;
 
     try {
@@ -51,11 +78,11 @@ $readLineEffect = KleisliEffect::liftImpure(function () {
     return $result;
 });
 
-$programEffect = $writeLineEffect->andThen($readLineEffect);
+$programEffect = $writeLine('Please write your name: ')->andThen($readLineEffect);
 
 $runtime = BasicRuntime::create([KleisliEffect::class => new KleisliEffectHandler()]);
 $program = $runtime->perform($programEffect);
-$program->run('Please enter you name: ')->match(
+$program->run(null)->match(
     function (string $name) {
         echo "I got this: {$name}";
     },
