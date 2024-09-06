@@ -15,6 +15,9 @@ require __DIR__.'/../vendor/autoload.php';
  * match value in environment
  * customize message to print.
  */
+/**
+ * @var callable(string):KleisliEffect<null,Tuple, mixed>
+ */
 $stdoutWriterEffect = fn (string $message) => KleisliEffect::liftImpure(function () {
     $result = fopen('php://output', 'w');
 
@@ -41,7 +44,7 @@ $stdoutWriterEffect = fn (string $message) => KleisliEffect::liftImpure(function
 ;
 
 /**
- * @var callable(string):KleisliEffect<mixed, Tuple, mixed> $writeLine
+ * @var callable(string):KleisliEffect<null, Tuple, mixed> $writeLine
  */
 $writeLine = fn (string $message) => $stdoutWriterEffect($message);
 
@@ -75,40 +78,46 @@ $readLineEffect = KleisliEffect::liftImpure(function () {
     )
 ;
 
+/**
+ * @var KleisliEffect<null, array<string>, mixed> $environmentEffect
+ */
 $environmentEffect = KleisliEffect::liftImpure(fn () => ['name' => 'Joe']);
 
 $programEffect = function () use ($writeLine, $readLineEffect, $environmentEffect): KleisliEffect {
-    return KleisliEffect::split(
-        $environmentEffect,
-        $writeLine('Please write your name: ')->andThen($readLineEffect)
-    )
-        // @phpstan-ignore argument.type
-        // @phpstan-ignore argument.type
-        ->andThen(KleisliEffect::arr(
-            function (Tuple $both): IOMonad {
-                $env = $both->fst();
-                $stdinResult = $both->snd();
+    return KleisliEffect::liftPure(fn () => Tuple::create(null, null))
+        ->andThen(
+            KleisliEffect::merge(
+                $environmentEffect,
+                $writeLine('Please write your name: ')->andThen($readLineEffect)
+            )
+            // @phpstan-ignore argument.type
+            // @phpstan-ignore argument.type
+                ->andThen(KleisliEffect::arr(
+                    function (Tuple $both): IOMonad {
+                        $env = $both->fst();
+                        $stdinResult = $both->snd();
 
-                /**
-                 * @var IOMonad<string, mixed> $readResult
-                 */
-                $readResult = $stdinResult->fst();
+                        /**
+                         * @var IOMonad<string, mixed> $readResult
+                         */
+                        $readResult = $stdinResult->fst();
 
-                return $readResult->match(
-                    function (string $name) use ($env) {
-                        $_name = trim($name);
-                        if ($_name == $env['name']) {
-                            $message = "Welcome {$_name}!";
-                        } else {
-                            $message = "Hello guest[{$_name}]";
-                        }
+                        return $readResult->match(
+                            function (string $name) use ($env) {
+                                $_name = trim($name);
+                                if ($_name == $env['name']) {
+                                    $message = "Welcome {$_name}!";
+                                } else {
+                                    $message = "Hello guest[{$_name}]";
+                                }
 
-                        return IOMonad::pure($message);
-                    },
-                    fn () => $readResult
-                );
-            }
-        ))
+                                return IOMonad::pure($message);
+                            },
+                            fn () => $readResult
+                        );
+                    }
+                ))
+        )
     ;
 };
 
