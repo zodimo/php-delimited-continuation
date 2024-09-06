@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Effect;
 
+use Zodimo\BaseReturn\Option;
 use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\Tuple;
 
@@ -367,6 +368,136 @@ class KleisliEffect implements EffectInterface
                 ->setArg('acquire', $this)
                 ->setArg('during', $during)
                 ->setArg('release', $release)
+        );
+    }
+
+    /**
+     * the control function will receive a continuation k.
+     *
+     * @template _INPUT
+     * @template _ERR
+     *
+     * @param callable(KleisliEffect<_INPUT, _INPUT, _ERR>):KleisliEffect<_INPUT, _INPUT, _ERR> $f
+     *
+     * @return KleisliEffect<_INPUT, _INPUT, _ERR>
+     */
+    public static function control(callable $f): KleisliEffect
+    {
+        $tag = self::createTag('control');
+
+        return new self(Operation::create($tag)->setArg('f', $f));
+    }
+
+    /**
+     * Summary of run.
+     *
+     * @param INPUT $value
+     *
+     * @return KleisliEffect<null, OUTPUT, ERR>
+     */
+    public function stubInput($value): KleisliEffect
+    {
+        $tag = self::createTag('stub-input');
+
+        return new self(Operation::create($tag)->setArg('effect', $this)->setArg('input', $value));
+    }
+
+    /**
+     * @template _OUTPUTK
+     * @template _ERRK
+     *
+     * @param KleisliEffect<OUTPUT, _OUTPUTK, _ERRK> $k
+     *
+     * @return KleisliEffect<INPUT, _OUTPUTK, _ERRK|ERR>
+     */
+    public function prompt(KleisliEffect $k): KleisliEffect
+    {
+        $composeTag = self::createTag('compose');
+        $compositionTag = self::createTag('composition');
+        $controlTag = self::createTag('control');
+
+        $isCompose = fn (string $tag): bool => $composeTag == $tag;
+        $isComposition = fn (string $tag): bool => $compositionTag == $tag;
+
+        /**
+         * @var callable(array<KleisliEffect>):Option<Tuple<int, KleisliEffect>>
+         */
+        $getControlEffect = function (array $effects) use ($controlTag): Option {
+            foreach ($effects as $index => $effect) {
+                if ($controlTag === $effect->getTag()) {
+                    return Option::some(Tuple::create($index, $effect));
+                }
+            }
+
+            return Option::none();
+        };
+
+        $getEffects = function (KleisliEffect $k) use ($isCompose, $isComposition): array {
+            if ($isCompose($k->getTag())) {
+                return [
+                    $k->getArg('effectF'),
+                    $k->getArg('effectG'),
+                ];
+            }
+            if ($isComposition($k->getTag())) {
+                return $k->getArg('effects');
+            }
+
+            return [$k];
+        };
+
+        $effects = call_user_func($getEffects, $k);
+
+        $controlEffectOption = call_user_func($getControlEffect, $effects);
+
+        return $controlEffectOption->match(
+            function (Tuple $control) use ($effects, $compositionTag) {
+                // evaluate stack with controlEffect
+                $controlEffect = $control->snd();
+                $controlF = $controlEffect->getArg('f');
+                // hole is a value and not a arrow...
+                $effectStackWithHole = function (KleisliEffect $hole) use ($control, $effects, $compositionTag) {
+                    $controlIndex = $control->fst();
+                    $initialEffects = array_slice($effects, 0, $controlIndex);
+                    $afterEffects = ($controlIndex < count($effects)) ? array_slice($effects, $controlIndex + 1) : [];
+
+                    $newEffectStack = [
+                        ...$initialEffects,
+                        $hole,
+                        ...$afterEffects,
+                    ];
+
+                    return new self(Operation::create($compositionTag)->setArg('effects', $newEffectStack));
+                };
+
+                return $this->andThen(call_user_func($controlF, $effectStackWithHole));
+            },
+            fn () => $this->andThen($k)
+        );
+    }
+
+    /**
+     * @template _INPUT
+     * @template _OUTPUT
+     * @template _CONDERR
+     * @template _THENERR
+     * @template _ELSEERR
+     *
+     * @param KleisliEffect< _INPUT, bool, _CONDERR>    $cond
+     * @param KleisliEffect< _INPUT, _OUTPUT, _THENERR> $then
+     * @param KleisliEffect< _INPUT, _OUTPUT, _ELSEERR> $else
+     *
+     * @return KleisliEffect< _INPUT, _OUTPUT, _ELSEERR|_THENERR>
+     */
+    public static function ifThenElse(KleisliEffect $cond, KleisliEffect $then, KleisliEffect $else): KleisliEffect
+    {
+        $tag = self::createTag('if-then-else');
+
+        return new self(
+            Operation::create($tag)
+                ->setArg('cond', $cond)
+                ->setArg('then', $then)
+                ->setArg('else', $else)
         );
     }
 

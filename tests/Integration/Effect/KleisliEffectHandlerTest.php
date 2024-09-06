@@ -216,4 +216,31 @@ class KleisliEffectHandlerTest extends TestCase
         $this->assertEquals(IOMonad::pure(12), $arrow->run(2), '[2] +5 < 10  = [2] + 10');
         $this->assertEquals(IOMonad::pure(27), $arrow->run(7), '[7] + 5 > 10 = [7]  + 20');
     }
+
+    public function testCanHandleStubInput()
+    {
+        $baseEffect = KleisliEffect::id();
+        $effect = $baseEffect->stubInput(10);
+
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($effect, $runtime);
+        $this->assertEquals(IOMonad::pure(10), $arrow->run(null));
+    }
+
+    public function testCanHandleIfThenElse()
+    {
+        $cond = KleisliEffect::liftPure(fn (int $x) => $x > 10);
+        $then = KleisliEffect::liftPure(fn (int $x) => $x + 10);
+        $else = KleisliEffect::liftPure(fn (int $x) => $x + 20);
+        $effect = KleisliEffect::ifThenElse($cond, $then, $else);
+
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($effect, $runtime);
+        $this->assertEquals(IOMonad::pure(29), $arrow->run(9), '9 < 10, 9 + 20');
+        $this->assertEquals(IOMonad::pure(21), $arrow->run(11), '11 > 10, 11 + 10');
+    }
 }

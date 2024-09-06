@@ -106,6 +106,20 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
 
                 return $thisArrow->flatMap(fn ($value) => $runtime->perform(call_user_func($f, $value)));
 
+            case 'kleisli-effect.stub-input':
+                $thisEffect = $effect->getArg('effect');
+                $input = $effect->getArg('input');
+                $thisArrow = $runtime->perform($thisEffect);
+
+                return KleisliIO::arr(fn () => $thisArrow->run($input));
+
+            case 'kleisli-effect.if-then-else':
+                $cond = $runtime->perform($effect->getArg('cond'));
+                $then = $runtime->perform($effect->getArg('then'));
+                $else = $runtime->perform($effect->getArg('else'));
+
+                return KleisliIOOps::ifThenElse($cond, $then, $else);
+
             default:
                 throw new \RuntimeException("KleisliEffectHandler: unknown tag: {$tag}");
         }

@@ -75,6 +75,8 @@ class KleisliIOOps
     }
 
     /**
+     * Alias for andThen on KleisliIO.
+     *
      * ">>>".
      * A composition operator >>> that can attach a second arrow to a first
      * as long as the first function’s output and the second’s input have matching types.

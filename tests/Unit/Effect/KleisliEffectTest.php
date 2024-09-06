@@ -298,4 +298,51 @@ class KleisliEffectTest extends TestCase
         $this->assertSame($arrow, $flatmapArrow->getArg('effect'), 'flatmap effect');
         $this->assertSame($choice, $flatmapArrow->getArg('f'), 'flatmap f');
     }
+
+    public function testPromptWithoutControlIsCompose()
+    {
+        $effect = KleisliEffect::id()->prompt(KleisliEffect::id());
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.compose', $effect->getTag());
+    }
+
+    public function testPromptWithControl()
+    {
+        $effect = KleisliEffect::id()
+            ->prompt(
+                KleisliEffect::id()
+                    ->andThen(KleisliEffect::control(function (callable $k) {
+                        return call_user_func($k, KleisliEffect::id());
+                    }))
+                    ->andThen(KleisliEffect::id())
+            )
+        ;
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.composition', $effect->getTag());
+    }
+
+    public function testStubInput()
+    {
+        $baseEffect = KleisliEffect::id();
+        $effect = $baseEffect->stubInput(10);
+
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.stub-input', $effect->getTag());
+        $this->assertSame($baseEffect, $effect->getArg('effect'));
+        $this->assertSame(10, $effect->getArg('input'));
+    }
+
+    public function testIfThenElse()
+    {
+        $cond = KleisliEffect::liftPure(fn (int $_) => true);
+        $then = KleisliEffect::liftPure(fn (int $x) => $x + 10);
+        $else = KleisliEffect::liftPure(fn (int $x) => $x + 20);
+        $effect = KleisliEffect::ifThenElse($cond, $then, $else);
+
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.if-then-else', $effect->getTag());
+        $this->assertSame($cond, $effect->getArg('cond'), 'cond');
+        $this->assertSame($then, $effect->getArg('then'), 'then');
+        $this->assertSame($else, $effect->getArg('else'), 'else');
+    }
 }
