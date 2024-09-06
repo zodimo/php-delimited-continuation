@@ -78,33 +78,37 @@ $readLineEffect = KleisliEffect::liftImpure(function () {
 $environmentEffect = KleisliEffect::liftImpure(fn () => ['name' => 'Joe']);
 
 $programEffect = function () use ($writeLine, $readLineEffect, $environmentEffect): KleisliEffect {
-    return $environmentEffect
-        ->flatmap(
-            fn (array $env) => $writeLine('Please write your name: ')
-                ->andThen($readLineEffect)
-                ->andThen(KleisliEffect::arr(
-                    function (Tuple $stdinResult) use ($env) {
-                        /**
-                         * @var IOMonad<string, mixed> $result
-                         */
-                        $result = $stdinResult->fst();
+    return KleisliEffect::split(
+        $environmentEffect,
+        $writeLine('Please write your name: ')->andThen($readLineEffect)
+    )
+        // @phpstan-ignore argument.type
+        // @phpstan-ignore argument.type
+        ->andThen(KleisliEffect::arr(
+            function (Tuple $both): IOMonad {
+                $env = $both->fst();
+                $stdinResult = $both->snd();
 
-                        return $result->match(
-                            function (string $name) use ($env) {
-                                $_name = trim($name);
-                                if ($_name == $env['name']) {
-                                    $message = "Welcome {$_name}!";
-                                } else {
-                                    $message = "Hello guest[{$_name}]";
-                                }
+                /**
+                 * @var IOMonad<string, mixed> $readResult
+                 */
+                $readResult = $stdinResult->fst();
 
-                                return IOMonad::pure($message);
-                            },
-                            fn () => $result
-                        );
-                    }
-                ))
-        )
+                return $readResult->match(
+                    function (string $name) use ($env) {
+                        $_name = trim($name);
+                        if ($_name == $env['name']) {
+                            $message = "Welcome {$_name}!";
+                        } else {
+                            $message = "Hello guest[{$_name}]";
+                        }
+
+                        return IOMonad::pure($message);
+                    },
+                    fn () => $readResult
+                );
+            }
+        ))
     ;
 };
 
