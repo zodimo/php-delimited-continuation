@@ -9,6 +9,12 @@ use Zodimo\DCF\Effect\KleisliEffectHandler;
 
 require __DIR__.'/../vendor/autoload.php';
 
+/**
+ * read from some environment
+ * read from stdin
+ * match value in environment
+ * customize message to print.
+ */
 $stdoutWriterEffect = fn (string $message) => KleisliEffect::liftImpure(function () {
     $result = fopen('php://output', 'w');
 
@@ -35,10 +41,13 @@ $stdoutWriterEffect = fn (string $message) => KleisliEffect::liftImpure(function
 ;
 
 /**
- * @var callable(string):KleisliEffect<void, string, mixed> $writeLine
+ * @var callable(string):KleisliEffect<mixed, Tuple, mixed> $writeLine
  */
 $writeLine = fn (string $message) => $stdoutWriterEffect($message);
 
+/**
+ * @var KleisliEffect<mixed, Tuple, mixed> $readLineEffect
+ */
 $readLineEffect = KleisliEffect::liftImpure(function () {
     $result = fopen('php://stdin', 'r');
 
@@ -66,23 +75,44 @@ $readLineEffect = KleisliEffect::liftImpure(function () {
     )
 ;
 
-$programEffect = $writeLine('Please write your name: ')->andThen($readLineEffect);
+$environmentEffect = KleisliEffect::liftImpure(fn () => ['name' => 'Joe']);
+
+$programEffect = function () use ($writeLine, $readLineEffect, $environmentEffect): KleisliEffect {
+    return $environmentEffect
+        ->flatmap(
+            fn (array $env) => $writeLine('Please write your name: ')
+                ->andThen($readLineEffect)
+                ->andThen(KleisliEffect::arr(
+                    function (Tuple $stdinResult) use ($env) {
+                        /**
+                         * @var IOMonad<string, mixed> $result
+                         */
+                        $result = $stdinResult->fst();
+
+                        return $result->match(
+                            function (string $name) use ($env) {
+                                $_name = trim($name);
+                                if ($_name == $env['name']) {
+                                    $message = "Welcome {$_name}!";
+                                } else {
+                                    $message = "Hello guest[{$_name}]";
+                                }
+
+                                return IOMonad::pure($message);
+                            },
+                            fn () => $result
+                        );
+                    }
+                ))
+        )
+    ;
+};
 
 $runtime = BasicRuntime::create([KleisliEffect::class => new KleisliEffectHandler()]);
-$programArrow = $runtime->perform($programEffect);
+$programArrow = $runtime->perform($programEffect());
 $programArrow->run(null)->match(
-    function (Tuple $result) {
-        /**
-         * @var Tuple<IOMonad<string, mixed>, IOMonad<null, mixed>> $result
-         */
-        $result->fst()->match(
-            function (string $name) {
-                echo "Hello {$name}!";
-            },
-            function ($_) {
-                echo 'ERROR on first!';
-            }
-        );
+    function (string $message) {
+        echo "Success: {$message}";
     },
     function ($_) {
         echo 'ERROR !';

@@ -305,13 +305,12 @@ class KleisliEffect implements EffectInterface
      * f(A)=>M B
      * M == KleisliEffect.
      *
-     * @template _INPUT
      * @template _OUTPUT
      * @template _ERR
      *
-     * @param callable(_INPUT):KleisliEffect<_INPUT,_OUTPUT, _ERR> $f
+     * @param callable(OUTPUT):KleisliEffect<INPUT,_OUTPUT, _ERR> $f
      *
-     * @return KleisliEffect<_INPUT, _OUTPUT, _ERR>
+     * @return KleisliEffect<INPUT, _OUTPUT, _ERR>
      */
     public function flatmap(callable $f): KleisliEffect
     {
