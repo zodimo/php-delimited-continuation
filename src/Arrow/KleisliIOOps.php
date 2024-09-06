@@ -175,6 +175,34 @@ class KleisliIOOps
     /**
      * @template _INPUT
      * @template _OUTPUT
+     * @template _LEFTERR
+     * @template _RIGHTERR
+     *
+     * @param KleisliIO<IOMonad, _INPUT, _OUTPUT, _LEFTERR>  $onLeft
+     * @param KleisliIO<IOMonad, _INPUT, _OUTPUT, _RIGHTERR> $onRight
+     *
+     * @return KleisliIO<IOMonad, Either<_INPUT, _INPUT>, _OUTPUT, _LEFTERR|_RIGHTERR>
+     */
+    public static function choice(KleisliIO $onLeft, KleisliIO $onRight): KleisliIO
+    {
+        /**
+         * @var callable(Either<_INPUT, _INPUT>):IOMonad<_OUTPUT, _LEFTERR|_RIGHTERR>
+         */
+        $func = function (Either $input) use ($onLeft, $onRight) {
+            return $input->match(
+                fn ($left) => $onLeft->run($left),
+                fn ($right) => $onRight->run($right)
+            );
+        };
+
+        // @phpstan-ignore return.type
+        // @phpstan-ignore return.type
+        return KleisliIO::arr($func);
+    }
+
+    /**
+     * @template _INPUT
+     * @template _OUTPUT
      * @template _CONDERR
      * @template _THENERR
      * @template _ELSEERR

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Tests\Integration\Effect;
 
 use PHPUnit\Framework\TestCase;
+use Zodimo\DCF\Arrow\Either;
 use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\Tuple;
 use Zodimo\DCF\Effect\BasicRuntime;
@@ -242,5 +243,19 @@ class KleisliEffectHandlerTest extends TestCase
         $arrow = $handler->handle($effect, $runtime);
         $this->assertEquals(IOMonad::pure(29), $arrow->run(9), '9 < 10, 9 + 20');
         $this->assertEquals(IOMonad::pure(21), $arrow->run(11), '11 > 10, 11 + 10');
+    }
+
+    public function testCanHandleChoice()
+    {
+        $onLeft = KleisliEffect::liftPure(fn (int $x) => $x + 20);
+        $onRight = KleisliEffect::liftPure(fn (int $x) => $x + 10);
+
+        $effect = KleisliEffect::choice($onLeft, $onRight);
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($effect, $runtime);
+        $this->assertEquals(IOMonad::pure(29), $arrow->run(Either::left(9)), '9 < 10, 9 + 20');
+        $this->assertEquals(IOMonad::pure(21), $arrow->run(Either::right(11)), '11 > 10, 11 + 10');
     }
 }

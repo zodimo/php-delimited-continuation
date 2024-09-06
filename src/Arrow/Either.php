@@ -54,7 +54,7 @@ class Either implements Monad
 
     public function isLeft(): bool
     {
-        return 'lefts' === $this->_tag;
+        return 'left' === $this->_tag;
     }
 
     public function isRight(): bool

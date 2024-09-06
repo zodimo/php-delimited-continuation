@@ -120,6 +120,13 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
 
                 return KleisliIOOps::ifThenElse($cond, $then, $else);
 
+            case 'kleisli-effect.choice':
+                $onLeft = $runtime->perform($effect->getArg('onLeft'));
+                $onRight = $runtime->perform($effect->getArg('onRight'));
+
+                // @phpstan-ignore return.type
+                return KleisliIOOps::choice($onLeft, $onRight);
+
             default:
                 throw new \RuntimeException("KleisliEffectHandler: unknown tag: {$tag}");
         }

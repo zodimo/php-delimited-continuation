@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Effect;
 
 use Zodimo\BaseReturn\Option;
+use Zodimo\DCF\Arrow\Either;
 use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\Tuple;
 
@@ -497,6 +498,28 @@ class KleisliEffect implements EffectInterface
                 ->setArg('cond', $cond)
                 ->setArg('then', $then)
                 ->setArg('else', $else)
+        );
+    }
+
+    /**
+     * @template _INPUT
+     * @template _OUTPUT
+     * @template _THENERR
+     * @template _ELSEERR
+     *
+     * @param KleisliEffect< _INPUT, _OUTPUT, _THENERR> $onLeft
+     * @param KleisliEffect< _INPUT, _OUTPUT, _ELSEERR> $onRight
+     *
+     * @return KleisliEffect<Either<_INPUT,_INPUT>, _OUTPUT, _ELSEERR|_THENERR>
+     */
+    public static function choice(KleisliEffect $onLeft, KleisliEffect $onRight): KleisliEffect
+    {
+        $tag = self::createTag('choice');
+
+        return new self(
+            Operation::create($tag)
+                ->setArg('onLeft', $onLeft)
+                ->setArg('onRight', $onRight)
         );
     }
 

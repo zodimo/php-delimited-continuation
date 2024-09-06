@@ -345,4 +345,16 @@ class KleisliEffectTest extends TestCase
         $this->assertSame($then, $effect->getArg('then'), 'then');
         $this->assertSame($else, $effect->getArg('else'), 'else');
     }
+
+    public function testChoice()
+    {
+        $onLeft = KleisliEffect::liftPure(fn (int $x) => $x + 10);
+        $onRight = KleisliEffect::liftPure(fn (int $x) => $x + 20);
+        $effect = KleisliEffect::choice($onLeft, $onRight);
+
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.choice', $effect->getTag());
+        $this->assertSame($onLeft, $effect->getArg('onLeft'), 'onLeft');
+        $this->assertSame($onRight, $effect->getArg('onRight'), 'onRight');
+    }
 }
