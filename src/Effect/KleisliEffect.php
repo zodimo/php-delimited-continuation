@@ -489,7 +489,7 @@ class KleisliEffect implements EffectInterface
 
                         $controlEffectOption = call_user_func($getControlEffect, $holeEffects);
 
-                        $finalHoleEffect = call_user_func($handleControlOperator, $controlEffectOption, $compositionTag, $holeEffects, $hole);
+                        $resolvedHoleEffect = call_user_func($handleControlOperator, $controlEffectOption, $compositionTag, $holeEffects, $hole);
 
                         // $newEffectStack = [
                         //     ...$initialEffects,
@@ -497,7 +497,7 @@ class KleisliEffect implements EffectInterface
                         //     // ...$afterEffects,
                         // ];
 
-                        return $initialComposition->andThen($finalHoleEffect);
+                        return $initialComposition->andThen($resolvedHoleEffect);
                     };
 
                     return $this->andThen(call_user_func($controlF, $effectStackWithHole));

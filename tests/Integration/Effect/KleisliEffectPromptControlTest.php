@@ -266,6 +266,16 @@ class KleisliEffectPromptControlTest extends TestCase
                                 return call_user_func(
                                     $k,
                                     KleisliEffect::liftPure(fn ($x) => $x + 10)
+                                    // ->andThen(
+                                    //     KleisliEffect::control(
+                                    //         function (callable $k) {
+                                    //             return call_user_func(
+                                    //                 $k,
+                                    //                 KleisliEffect::liftPure(fn ($x) => $x + 10)
+                                    //             );
+                                    //         }
+                                    //     )
+                                    // )
                                 );
                             }
                         )
