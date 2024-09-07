@@ -7,6 +7,7 @@ namespace Zodimo\DCF\Tests\Integration\Effect;
 use PHPUnit\Framework\TestCase;
 use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\KleisliIO;
+use Zodimo\DCF\Arrow\Tuple;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
@@ -195,5 +196,36 @@ class KleisliEffectTest extends TestCase
 
         $arrow = $this->handle($effect);
         $this->assertEquals(IOMonad::pure(200), $arrow->run(80), 'on false of if, 80 + 100 + 20');
+    }
+
+    public function testPC7Multishot()
+    {
+        $effect = KleisliEffect::id()
+            ->prompt(
+                KleisliEffect::id()
+
+                    ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 100))
+                    ->andThen(KleisliEffect::control(function (callable $k) {
+                        $effectF = KleisliEffect::liftPure(fn ($x) => $x + 50);
+                        $effectG = KleisliEffect::liftPure(fn ($x) => $x + 100);
+
+                        return KleisliEffect::split(
+                            call_user_func($k, $effectF),
+                            call_user_func($k, $effectG),
+                        );
+                    }))
+                    ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 200))
+            )
+        ;
+
+        $input = 80;
+        $arrow = $this->handle($effect);
+        $expectedResult = IOMonad::pure(Tuple::create(
+            // 80 + 100 + [50] + 200
+            430,
+            // 80 + 100 + [100] + 200
+            480
+        ));
+        $this->assertEquals($expectedResult, $arrow->run($input));
     }
 }
