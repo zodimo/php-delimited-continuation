@@ -61,7 +61,11 @@ class KleisliEffect implements EffectInterface
     }
 
     /**
-     * @return KleisliEffect<INPUT, INPUT, mixed>
+     * @template _INPUT
+     *
+     * @return KleisliEffect<_INPUT, _INPUT, mixed>
+     *
+     * @phpstan-ignore method.templateTypeNotInParameter
      */
     public static function id(): self
     {
@@ -389,6 +393,23 @@ class KleisliEffect implements EffectInterface
     }
 
     /**
+     * the control function will receive a continuation k.
+     *
+     * @template _INPUT
+     * @template _ERR
+     *
+     * @param callable(KleisliEffect<_INPUT, _INPUT, _ERR>):KleisliEffect<_INPUT, _INPUT, _ERR> $f
+     *
+     * @return KleisliEffect<_INPUT, _INPUT, _ERR>
+     */
+    public static function shift(callable $f): KleisliEffect
+    {
+        $tag = self::createTag('shift');
+
+        return new self(Operation::create($tag)->setArg('f', $f));
+    }
+
+    /**
      * Summary of run.
      *
      * @param INPUT $value
@@ -400,6 +421,92 @@ class KleisliEffect implements EffectInterface
         $tag = self::createTag('stub-input');
 
         return new self(Operation::create($tag)->setArg('effect', $this)->setArg('input', $value));
+    }
+
+    public function reset(KleisliEffect $k): KleisliEffect
+    {
+        // same as prompt but
+        // - looking for shiftTag
+        // - discard effects after the shift
+        // - rewrapping result in an additional reset
+        $composeTag = self::createTag('compose');
+        $compositionTag = self::createTag('composition');
+        $controlTag = self::createTag('shift');
+
+        $isCompose = fn (string $tag): bool => $composeTag == $tag;
+        $isComposition = fn (string $tag): bool => $compositionTag == $tag;
+
+        /**
+         * @var callable(array<KleisliEffect>):Option<Tuple<int, KleisliEffect>>
+         */
+        $getControlEffect = function (array $effects) use ($controlTag): Option {
+            foreach ($effects as $index => $effect) {
+                if ($controlTag === $effect->getTag()) {
+                    return Option::some(Tuple::create($index, $effect));
+                }
+            }
+
+            return Option::none();
+        };
+
+        $getEffects = function (KleisliEffect $k) use ($isCompose, $isComposition): array {
+            if ($isCompose($k->getTag())) {
+                return [
+                    $k->getArg('effectF'),
+                    $k->getArg('effectG'),
+                ];
+            }
+            if ($isComposition($k->getTag())) {
+                return $k->getArg('effects');
+            }
+
+            return [$k];
+        };
+
+        /**
+         * IF control effects present it will be the first..
+         */
+        $effects = call_user_func($getEffects, $k);
+
+        $controlEffectOption = call_user_func($getControlEffect, $effects);
+
+        $handleControlOperator = function ($controlEffectOption, $compositionTag, $effects, $k) use (&$handleControlOperator, $getEffects, $getControlEffect) {
+            return $controlEffectOption->match(
+                function (Tuple $control) use ($compositionTag, $effects, $getEffects, $getControlEffect, $handleControlOperator) {
+                    // evaluate stack with controlEffect
+                    $controlEffect = $control->snd();
+                    $controlF = $controlEffect->getArg('f');
+
+                    // hole is an arrow...
+                    $effectStackWithHole = function (KleisliEffect $hole) use ($control, $effects, $compositionTag, $getEffects, $getControlEffect, $handleControlOperator) {
+                        $controlIndex = $control->fst();
+                        $initialEffects = array_slice($effects, 0, $controlIndex);
+                        // $afterEffects = ($controlIndex < count($effects)) ? array_slice($effects, $controlIndex + 1) : [];
+
+                        $initialComposition = new self(Operation::create($compositionTag)->setArg('effects', $initialEffects));
+
+                        $holeEffects = call_user_func($getEffects, $hole);
+
+                        $controlEffectOption = call_user_func($getControlEffect, $holeEffects);
+
+                        $finalHoleEffect = call_user_func($handleControlOperator, $controlEffectOption, $compositionTag, $holeEffects, $hole);
+
+                        // $newEffectStack = [
+                        //     ...$initialEffects,
+                        //     $hole,
+                        //     // ...$afterEffects,
+                        // ];
+
+                        return $initialComposition->andThen($finalHoleEffect);
+                    };
+
+                    return $this->andThen(call_user_func($controlF, $effectStackWithHole));
+                },
+                fn () => $this->andThen($k)
+            );
+        };
+
+        return call_user_func($handleControlOperator, $controlEffectOption, $compositionTag, $effects, $k);
     }
 
     /**
@@ -446,16 +553,20 @@ class KleisliEffect implements EffectInterface
             return [$k];
         };
 
+        /**
+         * IF control effects present it will be the first..
+         */
         $effects = call_user_func($getEffects, $k);
 
         $controlEffectOption = call_user_func($getControlEffect, $effects);
 
         return $controlEffectOption->match(
-            function (Tuple $control) use ($effects, $compositionTag) {
+            function (Tuple $control) use ($compositionTag, $effects) {
                 // evaluate stack with controlEffect
                 $controlEffect = $control->snd();
                 $controlF = $controlEffect->getArg('f');
-                // hole is a value and not a arrow...
+
+                // hole is an arrow...
                 $effectStackWithHole = function (KleisliEffect $hole) use ($control, $effects, $compositionTag) {
                     $controlIndex = $control->fst();
                     $initialEffects = array_slice($effects, 0, $controlIndex);
@@ -470,7 +581,7 @@ class KleisliEffect implements EffectInterface
                     return new self(Operation::create($compositionTag)->setArg('effects', $newEffectStack));
                 };
 
-                return $this->andThen(call_user_func($controlF, $effectStackWithHole));
+                return $this->prompt(call_user_func($controlF, $effectStackWithHole));
             },
             fn () => $this->andThen($k)
         );

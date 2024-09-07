@@ -299,6 +299,16 @@ class KleisliEffectTest extends TestCase
         $this->assertSame($choice, $flatmapArrow->getArg('f'), 'flatmap f');
     }
 
+    public function testControl()
+    {
+        $f = fn ($_) => KleisliEffect::id();
+
+        $effect = KleisliEffect::control($f);
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.control', $effect->getTag());
+        $this->assertArrayHasKey('f', $effect->getArgs());
+    }
+
     public function testPromptWithoutControlIsCompose()
     {
         $effect = KleisliEffect::id()->prompt(KleisliEffect::id());
@@ -356,5 +366,37 @@ class KleisliEffectTest extends TestCase
         $this->assertEquals('kleisli-effect.choice', $effect->getTag());
         $this->assertSame($onLeft, $effect->getArg('onLeft'), 'onLeft');
         $this->assertSame($onRight, $effect->getArg('onRight'), 'onRight');
+    }
+
+    public function testShift()
+    {
+        $f = fn ($_) => KleisliEffect::id();
+
+        $effect = KleisliEffect::shift($f);
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.shift', $effect->getTag());
+        $this->assertArrayHasKey('f', $effect->getArgs());
+    }
+
+    public function testResetWithoutShiftIsCompose()
+    {
+        $effect = KleisliEffect::id()->reset(KleisliEffect::id());
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.compose', $effect->getTag());
+    }
+
+    public function testResettWithShift()
+    {
+        $effect = KleisliEffect::id()
+            ->reset(
+                KleisliEffect::id()
+                    ->andThen(KleisliEffect::shift(function (callable $k) {
+                        return call_user_func($k, KleisliEffect::id());
+                    }))
+                    ->andThen(KleisliEffect::id())
+            )
+        ;
+        $this->assertInstanceOf(KleisliEffect::class, $effect);
+        $this->assertEquals('kleisli-effect.composition', $effect->getTag());
     }
 }
