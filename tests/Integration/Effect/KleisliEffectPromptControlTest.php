@@ -79,7 +79,7 @@ class KleisliEffectPromptControlTest extends TestCase
         $mockedEffect = $this->createMock(KleisliEffect::class);
         $mockedEffect->expects($this->never())->method('getArg');
 
-        $effect = KleisliEffect::id()
+        $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
             ->prompt(
                 KleisliEffect::id()
                     ->andThen($mockedEffect)
@@ -93,12 +93,12 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10 + 10), $arrow->run(10));
+        $this->assertEquals(IOMonad::pure(100 + 10 + 10), $arrow->run(10));
     }
 
     public function testPC3a()
     {
-        $effect = KleisliEffect::id()
+        $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
             ->prompt(
                 KleisliEffect::liftPure(fn ($x) => $x + 100)
                     ->andThen(
@@ -112,12 +112,12 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10 + 100 + 10), $arrow->run(10));
+        $this->assertEquals(IOMonad::pure(10 + 100 + 100 + 10), $arrow->run(10));
     }
 
     public function testPC3b()
     {
-        $effect = KleisliEffect::id()
+        $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
             ->prompt(
                 KleisliEffect::liftPure(fn ($x) => $x + 100)
                     ->andThen(
@@ -132,12 +132,12 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(320), $arrow->run(10));
+        $this->assertEquals(IOMonad::pure(100 + 100 + 10 + 200 + 10), $arrow->run(10));
     }
 
     public function testPC4()
     {
-        $effect = KleisliEffect::id()
+        $effect = KleisliEffect::liftPure(fn ($x) => $x + 100) // not pass on because input stubbed in control
             ->prompt(
                 KleisliEffect::liftPure(fn ($x) => $x + 100)
                     ->andThen(
@@ -153,12 +153,12 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(120), $arrow->run(null));
+        $this->assertEquals(IOMonad::pure(100 + 10 + 10), $arrow->run(null));
     }
 
     public function testPC5()
     {
-        $effect = KleisliEffect::id()
+        $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
             ->prompt(
                 KleisliEffect::liftPure(fn ($x) => $x + 100)
                     ->andThen(
@@ -185,12 +185,12 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(130), $arrow->run(80), 'on True of if, 80 + 100 - 50');
+        $this->assertEquals(IOMonad::pure(230), $arrow->run(80), 'on True of if, 100 + 80 + 100 - 50');
     }
 
     public function testPC6()
     {
-        $effect = KleisliEffect::id()
+        $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
             ->prompt(
                 KleisliEffect::liftPure(fn ($x) => $x + 100)
                     ->andThen(
@@ -217,12 +217,12 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(200), $arrow->run(80), 'on false of if, 80 + 100 + 20');
+        $this->assertEquals(IOMonad::pure(300), $arrow->run(80), 'on false of if, 100 + 80 + 100 + 20');
     }
 
     public function testPC7Multishot()
     {
-        $effect = KleisliEffect::id()
+        $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
             ->prompt(
                 KleisliEffect::liftPure(fn ($x) => $x + 100)
                     ->andThen(
@@ -245,10 +245,10 @@ class KleisliEffectPromptControlTest extends TestCase
         $input = 80;
         $arrow = $this->handle($effect);
         $expectedResult = IOMonad::pure(Tuple::create(
-            // 80 + 100 + [50] + 200
-            430,
-            // 80 + 100 + [100] + 200
-            480
+            // 100 + 80 + 100 + [50] + 200
+            530,
+            // 100 + 80 + 100 + [100] + 200
+            580
         ));
         $this->assertEquals($expectedResult, $arrow->run($input));
     }
