@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Tests\Integration\Effect;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\DCF\Arrow\Either;
+use Zodimo\BaseReturn\Either;
 use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\Tuple;
 use Zodimo\DCF\Effect\BasicRuntime;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Arrow;
 
+use Zodimo\BaseReturn\Either;
+
 class KleisliIOOps
 {
     /**
