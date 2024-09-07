@@ -21,7 +21,7 @@
   ],
   "require": {
     "php": "~7.4|~8",
-    "zodimo/base-return": "^0.1.5"
+    "zodimo/base-return": "^0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.6",
