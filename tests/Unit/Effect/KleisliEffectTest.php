@@ -71,7 +71,7 @@ class KleisliEffectTest extends TestCase
 
     public function testCompose2()
     {
-        $variant = 'variant: compose(eff, compose)';
+        $variant = 'variant: compose(eff, composition)';
 
         $idEffect1 = KleisliEffect::id();
         $idEffect2 = KleisliEffect::id();
@@ -90,7 +90,7 @@ class KleisliEffectTest extends TestCase
 
     public function testCompose3()
     {
-        $variant = 'variant: compose(compose, eff)';
+        $variant = 'variant: compose(composition, eff)';
 
         $idEffect1 = KleisliEffect::id();
         $idEffect2 = KleisliEffect::id();
@@ -109,7 +109,7 @@ class KleisliEffectTest extends TestCase
 
     public function testCompose4()
     {
-        $variant = 'variant: compose(compose, compose)';
+        $variant = 'variant: compose(composition, composition)';
         $f1 = fn (int $x) => IOMonad::pure($x + 2);
         $f2 = fn (int $x) => IOMonad::pure($x * 3);
 
@@ -121,127 +121,6 @@ class KleisliEffectTest extends TestCase
         $expectedArgs = [
             'effects' => [
                 $idEffect1,
-                $idEffect2,
-                $idEffect1,
-                $idEffect2,
-            ],
-        ];
-        $this->assertSame($expectedArgs, $effect->getArgs(), "{$variant}: effects");
-    }
-
-    public function testCompose5()
-    {
-        $variant = 'variant: compose(eff, composition)';
-        $f1 = fn (int $x) => IOMonad::pure($x + 2);
-        $f2 = fn (int $x) => IOMonad::pure($x * 3);
-
-        $idEffect1 = KleisliEffect::arr($f1);
-        $idEffect2 = KleisliEffect::arr($f2);
-        $composedEffect = KleisliEffect::compose($idEffect1, $idEffect2);
-        $compositionEff = KleisliEffect::compose($composedEffect, $composedEffect);
-        $effect = KleisliEffect::compose($idEffect1, $compositionEff);
-        $this->assertEquals('kleisli-effect.composition', $effect->getTag(), "{$variant}: tag");
-        $expectedArgs = [
-            'effects' => [
-                $idEffect1,
-                $idEffect1,
-                $idEffect2,
-                $idEffect1,
-                $idEffect2,
-            ],
-        ];
-        $this->assertSame($expectedArgs, $effect->getArgs(), "{$variant}: effects");
-    }
-
-    public function testCompose6()
-    {
-        $variant = 'variant: compose(composition, eff)';
-        $f1 = fn (int $x) => IOMonad::pure($x + 2);
-        $f2 = fn (int $x) => IOMonad::pure($x * 3);
-
-        $idEffect1 = KleisliEffect::arr($f1);
-        $idEffect2 = KleisliEffect::arr($f2);
-        $composedEffect = KleisliEffect::compose($idEffect1, $idEffect2);
-        $compositionEff = KleisliEffect::compose($composedEffect, $composedEffect);
-        $effect = KleisliEffect::compose($compositionEff, $idEffect1);
-        $this->assertEquals('kleisli-effect.composition', $effect->getTag(), "{$variant}: tag");
-        $expectedArgs = [
-            'effects' => [
-                $idEffect1,
-                $idEffect2,
-                $idEffect1,
-                $idEffect2,
-                $idEffect1,
-            ],
-        ];
-        $this->assertSame($expectedArgs, $effect->getArgs(), "{$variant}: effects");
-    }
-
-    public function testCompose7()
-    {
-        $variant = 'variant: compose(composition, composition)';
-        $f1 = fn (int $x) => IOMonad::pure($x + 2);
-        $f2 = fn (int $x) => IOMonad::pure($x * 3);
-
-        $idEffect1 = KleisliEffect::arr($f1);
-        $idEffect2 = KleisliEffect::arr($f2);
-        $composedEffect = KleisliEffect::compose($idEffect1, $idEffect2);
-        $compositionEff = KleisliEffect::compose($composedEffect, $idEffect2);
-        $effect = KleisliEffect::compose($compositionEff, $compositionEff);
-        $this->assertEquals('kleisli-effect.composition', $effect->getTag(), "{$variant}: tag");
-        $expectedArgs = [
-            'effects' => [
-                $idEffect1,
-                $idEffect2,
-                $idEffect2,
-                $idEffect1,
-                $idEffect2,
-                $idEffect2,
-            ],
-        ];
-        $this->assertSame($expectedArgs, $effect->getArgs(), "{$variant}: effects");
-    }
-
-    public function testCompose8()
-    {
-        $variant = 'variant: compose(compose, composition)';
-        $f1 = fn (int $x) => IOMonad::pure($x + 2);
-        $f2 = fn (int $x) => IOMonad::pure($x * 3);
-
-        $idEffect1 = KleisliEffect::arr($f1);
-        $idEffect2 = KleisliEffect::arr($f2);
-        $composedEffect = KleisliEffect::compose($idEffect1, $idEffect2);
-        $compositionEff = KleisliEffect::compose($composedEffect, $idEffect2);
-        $effect = KleisliEffect::compose($composedEffect, $compositionEff);
-        $this->assertEquals('kleisli-effect.composition', $effect->getTag(), "{$variant}: tag");
-        $expectedArgs = [
-            'effects' => [
-                $idEffect1,
-                $idEffect2,
-                $idEffect1,
-                $idEffect2,
-                $idEffect2,
-            ],
-        ];
-        $this->assertSame($expectedArgs, $effect->getArgs(), "{$variant}: effects");
-    }
-
-    public function testCompose9()
-    {
-        $variant = 'variant: compose(composition, compose)';
-        $f1 = fn (int $x) => IOMonad::pure($x + 2);
-        $f2 = fn (int $x) => IOMonad::pure($x * 3);
-
-        $idEffect1 = KleisliEffect::arr($f1);
-        $idEffect2 = KleisliEffect::arr($f2);
-        $composedEffect = KleisliEffect::compose($idEffect1, $idEffect2);
-        $compositionEff = KleisliEffect::compose($composedEffect, $idEffect2);
-        $effect = KleisliEffect::compose($compositionEff, $composedEffect);
-        $this->assertEquals('kleisli-effect.composition', $effect->getTag(), "{$variant}: tag");
-        $expectedArgs = [
-            'effects' => [
-                $idEffect1,
-                $idEffect2,
                 $idEffect2,
                 $idEffect1,
                 $idEffect2,

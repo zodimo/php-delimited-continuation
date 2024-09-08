@@ -128,49 +128,14 @@ class KleisliEffect implements EffectInterface
      */
     public static function compose(KleisliEffect $effectF, KleisliEffect $effectG): self
     {
-        $composeTag = self::createTag('compose');
         $compositionTag = self::createTag('composition');
 
-        $isEff = fn (string $tag): bool => $composeTag !== $tag and $compositionTag !== $tag;
-        $isCompose = fn (string $tag): bool => $composeTag == $tag;
+        $isEff = fn (string $tag): bool => $compositionTag !== $tag;
         $isComposition = fn (string $tag): bool => $compositionTag == $tag;
         $fTag = $effectF->getTag();
         $gTag = $effectG->getTag();
 
-        // 2. compose(eff, compose)
-        if ($isEff($fTag) and $isCompose($gTag)) {
-            $effects = [
-                $effectF,
-                $effectG->getArg('effectF'),
-                $effectG->getArg('effectG'),
-            ];
-
-            return new self(Operation::create($compositionTag)->setArg('effects', $effects));
-        }
-
-        // 3. compose(compose, eff)
-        if ($isCompose($fTag) and $isEff($gTag)) {
-            $effects = [
-                $effectF->getArg('effectF'),
-                $effectF->getArg('effectG'),
-                $effectG,
-            ];
-
-            return new self(Operation::create($compositionTag)->setArg('effects', $effects));
-        }
-        // 4. compose(compose, compose)
-        if ($isCompose($fTag) and $isCompose($gTag)) {
-            $effects = [
-                $effectF->getArg('effectF'),
-                $effectF->getArg('effectG'),
-                $effectG->getArg('effectF'),
-                $effectG->getArg('effectG'),
-            ];
-
-            return new self(Operation::create($compositionTag)->setArg('effects', $effects));
-        }
-
-        // 5. compose(eff, composition)
+        // 2. compose(eff, composition)
         if ($isEff($fTag) and $isComposition($gTag)) {
             $effects = [
                 $effectF,
@@ -179,7 +144,8 @@ class KleisliEffect implements EffectInterface
 
             return new self(Operation::create($compositionTag)->setArg('effects', $effects));
         }
-        // 6. compose(composition, eff)
+
+        // 3. compose(composition, eff)
         if ($isComposition($fTag) and $isEff($gTag)) {
             $effects = [
                 ...$effectF->getArg('effects'),
@@ -188,32 +154,11 @@ class KleisliEffect implements EffectInterface
 
             return new self(Operation::create($compositionTag)->setArg('effects', $effects));
         }
-        // 7. compose(composition, composition)
+        // 4. compose(composition, composition)
         if ($isComposition($fTag) and $isComposition($gTag)) {
             $effects = [
                 ...$effectF->getArg('effects'),
                 ...$effectG->getArg('effects'),
-            ];
-
-            return new self(Operation::create($compositionTag)->setArg('effects', $effects));
-        }
-
-        // 8. compose(compose, composition)
-        if ($isCompose($fTag) and $isComposition($gTag)) {
-            $effects = [
-                $effectF->getArg('effectF'),
-                $effectF->getArg('effectG'),
-                ...$effectG->getArg('effects'),
-            ];
-
-            return new self(Operation::create($compositionTag)->setArg('effects', $effects));
-        }
-        // 9. compose(composition, compose)
-        if ($isComposition($fTag) and $isCompose($gTag)) {
-            $effects = [
-                ...$effectF->getArg('effects'),
-                $effectG->getArg('effectF'),
-                $effectG->getArg('effectG'),
             ];
 
             return new self(Operation::create($compositionTag)->setArg('effects', $effects));
