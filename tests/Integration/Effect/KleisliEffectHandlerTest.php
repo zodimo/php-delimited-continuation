@@ -11,6 +11,7 @@ use Zodimo\DCF\Arrow\Tuple;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -19,6 +20,8 @@ use Zodimo\DCF\Effect\KleisliEffectHandler;
  */
 class KleisliEffectHandlerTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testCanHandleFirst()
     {
         $func = fn (int $a) => IOMonad::pure($a + 10);
@@ -29,8 +32,8 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle(KleisliEffect::first($eff), $runtime);
         $result = $arrow->run(Tuple::create(10, 'Joe'));
-        $expectedResult = IOMonad::pure(Tuple::create(20, 'Joe'));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create(20, 'Joe');
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleSecond()
@@ -43,8 +46,8 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle(KleisliEffect::second($eff), $runtime);
         $result = $arrow->run(Tuple::create('Joe', 10));
-        $expectedResult = IOMonad::pure(Tuple::create('Joe', 20));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create('Joe', 20);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleCompose()
@@ -61,8 +64,8 @@ class KleisliEffectHandlerTest extends TestCase
         $arrowComposed = $handler->handle(KleisliEffect::compose($effectF, $effectG), $runtime);
 
         $result = $arrowComposed->run(10);
-        $expectedResult = IOMonad::pure(200);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 200;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleMerge()
@@ -78,8 +81,8 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrowMerged = $handler->handle(KleisliEffect::merge($effectF, $effectG), $runtime);
         $result = $arrowMerged->run(Tuple::create(20, 30));
-        $expectedResult = IOMonad::pure(Tuple::create(30, 300));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create(30, 300);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleSplit()
@@ -96,8 +99,8 @@ class KleisliEffectHandlerTest extends TestCase
         $arrowSplit = $handler->handle(KleisliEffect::split($effectF, $effectG), $runtime);
 
         $result = $arrowSplit->run(50);
-        $expectedResult = IOMonad::pure(Tuple::create(60, 500));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create(60, 500);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleComposition()
@@ -117,8 +120,8 @@ class KleisliEffectHandlerTest extends TestCase
         $arrowComposed = $handler->handle($composedEffectL2, $runtime);
 
         $result = $arrowComposed->run(10);
-        $expectedResult = IOMonad::pure(300);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 300;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testTheCallStack()
@@ -140,8 +143,8 @@ class KleisliEffectHandlerTest extends TestCase
         }
         $composedArrow = $handler->handle($arrowOneComposed, $runtime);
         $result = $composedArrow->run(0);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
         // print_r($arrowOneComposed);
         $this->assertEquals(1, 1);
     }
@@ -156,8 +159,8 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle($eff, $runtime);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(20);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 20;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleLiftImpure()
@@ -170,8 +173,8 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle($eff, $runtime);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(20);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 20;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleBracketHappyPath()
@@ -188,8 +191,8 @@ class KleisliEffectHandlerTest extends TestCase
         $arrow = $handler->handle($effect, $runtime);
 
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(Tuple::create(IOMonad::pure(10), IOMonad::pure(null)));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create(IOMonad::pure(10), IOMonad::pure(null));
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleFlatmap()
@@ -214,8 +217,8 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle($effect, $runtime);
 
-        $this->assertEquals(IOMonad::pure(12), $arrow->run(2), '[2] +5 < 10  = [2] + 10');
-        $this->assertEquals(IOMonad::pure(27), $arrow->run(7), '[7] + 5 > 10 = [7]  + 20');
+        $this->assertEquals(12, $arrow->run(2)->unwrapSuccess($this->createClosureNotCalled()), '[2] +5 < 10  = [2] + 10');
+        $this->assertEquals(27, $arrow->run(7)->unwrapSuccess($this->createClosureNotCalled()), '[7] + 5 > 10 = [7]  + 20');
     }
 
     public function testCanHandleStubInput()
@@ -227,7 +230,7 @@ class KleisliEffectHandlerTest extends TestCase
         $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
-        $this->assertEquals(IOMonad::pure(10), $arrow->run(null));
+        $this->assertEquals(10, $arrow->run(null)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleIfThenElse()
@@ -241,8 +244,8 @@ class KleisliEffectHandlerTest extends TestCase
         $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
-        $this->assertEquals(IOMonad::pure(29), $arrow->run(9), '9 < 10, 9 + 20');
-        $this->assertEquals(IOMonad::pure(21), $arrow->run(11), '11 > 10, 11 + 10');
+        $this->assertEquals(29, $arrow->run(9)->unwrapSuccess($this->createClosureNotCalled()), '9 < 10, 9 + 20');
+        $this->assertEquals(21, $arrow->run(11)->unwrapSuccess($this->createClosureNotCalled()), '11 > 10, 11 + 10');
     }
 
     public function testCanHandleChoice()
@@ -255,8 +258,8 @@ class KleisliEffectHandlerTest extends TestCase
         $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
-        $this->assertEquals(IOMonad::pure(29), $arrow->run(Either::left(9)), '9 < 10, 9 + 20');
-        $this->assertEquals(IOMonad::pure(21), $arrow->run(Either::right(11)), '11 > 10, 11 + 10');
+        $this->assertEquals(29, $arrow->run(Either::left(9))->unwrapSuccess($this->createClosureNotCalled()), '9 < 10, 9 + 20');
+        $this->assertEquals(21, $arrow->run(Either::right(11))->unwrapSuccess($this->createClosureNotCalled()), '11 > 10, 11 + 10');
     }
 
     public function testCanHandlePrompt()
@@ -268,7 +271,7 @@ class KleisliEffectHandlerTest extends TestCase
         $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
-        $this->assertEquals(IOMonad::pure(10), $arrow->run(10));
+        $this->assertEquals(10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleReset()
@@ -280,6 +283,6 @@ class KleisliEffectHandlerTest extends TestCase
         $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
-        $this->assertEquals(IOMonad::pure(10), $arrow->run(10));
+        $this->assertEquals(10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

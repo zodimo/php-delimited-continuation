@@ -18,13 +18,15 @@ use Zodimo\BaseReturn\Result;
 class IOMonad implements Monad
 {
     /**
-     * @var Result<VALUE, ERR>
+     * @var callable():Result<VALUE, ERR>
      */
-    private Result $_result;
+    private $_thunk;
+    private ?Result $evalResult;
 
-    private function __construct(Result $result)
+    private function __construct(callable $thunk)
     {
-        $this->_result = $result;
+        $this->_thunk = $thunk;
+        $this->evalResult = null;
     }
 
     /**
@@ -35,12 +37,12 @@ class IOMonad implements Monad
      *
      * @return IOMonad<_OUTPUTF, _ERRF>|IOMonad<VALUE, ERR>
      */
-    public function flatmap(callable $f): Monad
+    public function flatmap(callable $f): IOMonad
     {
-        return $this->_result->match(
-            fn ($value) => call_user_func($f, $value),
-            fn ($_) => $this
-        );
+        return new IOMonad(fn () => $this->eval()->match(
+            fn ($value) => call_user_func($f, $value)->eval(),
+            fn ($_) => $this->eval()
+        ));
     }
 
     /**
@@ -50,12 +52,9 @@ class IOMonad implements Monad
      *
      * @return IOMonad<_OUTPUTF, ERR>
      */
-    public function fmap(callable $f): Monad
+    public function fmap(callable $f): IOMonad
     {
-        return $this->_result->match(
-            fn ($value) => IOMonad::pure(call_user_func($f, $value)),
-            fn ($_) => $this
-        );
+        return new IOMonad(fn () => $this->eval()->map($f));
     }
 
     /**
@@ -65,9 +64,9 @@ class IOMonad implements Monad
      *
      * @return IOMonad<_VALUE, mixed>
      */
-    public static function pure($a): Monad
+    public static function pure($a): IOMonad
     {
-        return new self(Result::succeed($a));
+        return new self(fn () => Result::succeed($a));
     }
 
     /**
@@ -77,9 +76,9 @@ class IOMonad implements Monad
      *
      * @return IOMonad<mixed, _ERR>
      */
-    public static function fail($e): Monad
+    public static function fail($e): IOMonad
     {
-        return new self(Result::fail($e));
+        return new self(fn () => Result::fail($e));
     }
 
     /**
@@ -87,12 +86,12 @@ class IOMonad implements Monad
      */
     public function isSuccess(): bool
     {
-        return $this->_result->isSuccess();
+        return $this->eval()->isSuccess();
     }
 
     public function isFailure(): bool
     {
-        return $this->_result->isFailure();
+        return $this->eval()->isFailure();
     }
 
     /**
@@ -104,7 +103,7 @@ class IOMonad implements Monad
      */
     public function unwrapSuccess(callable $onFailure)
     {
-        return $this->_result->unwrap($onFailure);
+        return $this->eval()->unwrap($onFailure);
     }
 
     /**
@@ -116,7 +115,7 @@ class IOMonad implements Monad
      */
     public function unwrapFailure(callable $onSuccess)
     {
-        return $this->_result->unwrapFailure($onSuccess);
+        return $this->eval()->unwrapFailure($onSuccess);
     }
 
     /**
@@ -129,9 +128,21 @@ class IOMonad implements Monad
      */
     public function match(callable $onSuccess, callable $onFailure)
     {
-        return $this->_result->match(
+        return $this->eval()->match(
             $onSuccess,
             $onFailure
         );
+    }
+
+    /**
+     * @return Result<VALUE, ERR>
+     */
+    private function eval(): Result
+    {
+        if (is_null($this->evalResult)) {
+            $this->evalResult = call_user_func($this->_thunk);
+        }
+
+        return $this->evalResult;
     }
 }

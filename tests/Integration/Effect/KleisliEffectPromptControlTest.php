@@ -44,8 +44,8 @@ class KleisliEffectPromptControlTest extends TestCase
         $effect = KleisliEffect::id();
         $arrow = $this->handle($effect);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     /**
@@ -73,7 +73,7 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10), $arrow->run(10));
+        $this->assertEquals(10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testPC2()
@@ -97,7 +97,7 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(100 + 10 + 10), $arrow->run(10));
+        $this->assertEquals(100 + 10 + 10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testPC3a()
@@ -118,7 +118,7 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10 + 100 + 100 + 10), $arrow->run(10));
+        $this->assertEquals(10 + 100 + 100 + 10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testPC3b()
@@ -140,7 +140,7 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(100 + 100 + 10 + 200 + 10), $arrow->run(10));
+        $this->assertEquals(100 + 100 + 10 + 200 + 10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testPC4()
@@ -163,7 +163,7 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(100 + 10 + 10), $arrow->run(null));
+        $this->assertEquals(100 + 10 + 10, $arrow->run(null)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testPC5()
@@ -197,7 +197,7 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(230), $arrow->run(80), 'on True of if, 100 + 80 + 100 - 50');
+        $this->assertEquals(230, $arrow->run(80)->unwrapSuccess($this->createClosureNotCalled()), 'on True of if, 100 + 80 + 100 - 50');
     }
 
     public function testPC6()
@@ -231,7 +231,7 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(300), $arrow->run(80), 'on false of if, 100 + 80 + 100 + 20');
+        $this->assertEquals(300, $arrow->run(80)->unwrapSuccess($this->createClosureNotCalled()), 'on false of if, 100 + 80 + 100 + 20');
     }
 
     public function testPC7Multishot()
@@ -260,13 +260,13 @@ class KleisliEffectPromptControlTest extends TestCase
 
         $input = 80;
         $arrow = $this->handle($effect);
-        $expectedResult = IOMonad::pure(Tuple::create(
+        $expectedResult = Tuple::create(
             // 100 + 80 + 100 + [50] + 200
             530,
             // 100 + 80 + 100 + [100] + 200
             580
-        ));
-        $this->assertEquals($expectedResult, $arrow->run($input));
+        );
+        $this->assertEquals($expectedResult, $arrow->run($input)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testPC8()
@@ -310,6 +310,6 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10 + 33 + 100 + 10 + 20 + 10 + 55), $arrow->run(10));
+        $this->assertEquals(10 + 33 + 100 + 10 + 20 + 10 + 55, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

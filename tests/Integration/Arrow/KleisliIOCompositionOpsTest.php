@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Tests\Integration\Arrow;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Arrow\KleisliIOComposition;
 use Zodimo\DCF\Arrow\KleisliIOCompositionOps;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -17,6 +17,8 @@ use Zodimo\DCF\Arrow\KleisliIOCompositionOps;
  */
 class KleisliIOCompositionOpsTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testCompose()
     {
         $arrowFF = KleisliIO::liftPure(fn (int $x) => $x + 10);
@@ -27,8 +29,8 @@ class KleisliIOCompositionOpsTest extends TestCase
 
         $arrowComposed = KleisliIOCompositionOps::compose($compoFF, $compoFG);
         $result = $arrowComposed->run(10);
-        $expectedResult = IOMonad::pure(200);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 200;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testAppendArrow()
@@ -40,7 +42,7 @@ class KleisliIOCompositionOpsTest extends TestCase
 
         $arrowComposed = KleisliIOCompositionOps::appendArrow($compoFF, $arrowFG);
         $result = $arrowComposed->run(10);
-        $expectedResult = IOMonad::pure(200);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 200;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

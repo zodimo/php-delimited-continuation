@@ -9,6 +9,7 @@ use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliCompositionEffect;
 use Zodimo\DCF\Effect\KleisliCompositionEffectHandler;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -17,6 +18,8 @@ use Zodimo\DCF\Effect\KleisliCompositionEffectHandler;
  */
 class KleisliCompositionEffectHandlerTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testCanHandleCompose()
     {
         $funcF = fn (int $x) => IOMonad::pure($x + 10);
@@ -31,7 +34,7 @@ class KleisliCompositionEffectHandlerTest extends TestCase
         $arrowComposed = $handler->handle(KleisliCompositionEffect::compose($effectF, $effectG), $runtime);
 
         $result = $arrowComposed->run(10);
-        $expectedResult = IOMonad::pure(200);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 200;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

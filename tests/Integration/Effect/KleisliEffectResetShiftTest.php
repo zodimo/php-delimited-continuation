@@ -44,8 +44,8 @@ class KleisliEffectResetShiftTest extends TestCase
         $effect = KleisliEffect::id();
         $arrow = $this->handle($effect);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     /**
@@ -69,7 +69,7 @@ class KleisliEffectResetShiftTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10), $arrow->run(10));
+        $this->assertEquals(10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testRS2()
@@ -91,7 +91,7 @@ class KleisliEffectResetShiftTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(20), $arrow->run(10));
+        $this->assertEquals(20, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testRS3a()
@@ -110,7 +110,7 @@ class KleisliEffectResetShiftTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10 + 100 + 10), $arrow->run(10));
+        $this->assertEquals(10 + 100 + 10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testRS3b()
@@ -136,7 +136,7 @@ class KleisliEffectResetShiftTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(120), $arrow->run(10));
+        $this->assertEquals(120, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testRS7Multishot()
@@ -163,13 +163,13 @@ class KleisliEffectResetShiftTest extends TestCase
 
         $input = 80;
         $arrow = $this->handle($effect);
-        $expectedResult = IOMonad::pure(Tuple::create(
+        $expectedResult = Tuple::create(
             // 80 + 100 + [50]
             230,
             // 80 + 100 + [100]
             280
-        ));
-        $this->assertEquals($expectedResult, $arrow->run($input));
+        );
+        $this->assertEquals($expectedResult, $arrow->run($input)->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testRS8()
@@ -198,6 +198,6 @@ class KleisliEffectResetShiftTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10 + 100 + 10 + 20), $arrow->run(10));
+        $this->assertEquals(10 + 100 + 10 + 20, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

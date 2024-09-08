@@ -11,6 +11,7 @@ use Zodimo\DCF\Effect\KleisliCompositionEffect;
 use Zodimo\DCF\Effect\KleisliCompositionEffectHandler;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\Runtime;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -19,6 +20,8 @@ use Zodimo\DCF\Effect\Runtime;
  */
 class KleisliCompositionEffectHandlerTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testCanCreate()
     {
         $handler = new KleisliCompositionEffectHandler();
@@ -36,8 +39,8 @@ class KleisliCompositionEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle($compositionEffect, $runtime);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandleId()
@@ -50,8 +53,8 @@ class KleisliCompositionEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle($compositionEffect, $runtime);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandlerArr()
@@ -62,7 +65,7 @@ class KleisliCompositionEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle(KleisliCompositionEffect::arr($func), $runtime);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

@@ -10,6 +10,7 @@ use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -18,6 +19,8 @@ use Zodimo\DCF\Effect\KleisliEffectHandler;
  */
 class CCTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function abortP(KleisliEffect $cc): KleisliEffect
     {
         // abortP :: Prompt r a -> CC r a -> CC r b
@@ -51,7 +54,7 @@ class CCTest extends TestCase
         $arrow = $this->handleEffect($ccEffect);
         $result = $arrow->run(1);
 
-        $this->assertEquals(IOMonad::pure(5), $result);
+        $this->assertEquals(5, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function test2()
@@ -66,7 +69,7 @@ class CCTest extends TestCase
         $arrow = $this->handleEffect($ccEffect);
         $result = $arrow->run(5);
 
-        $this->assertEquals(IOMonad::pure(9), $result);
+        $this->assertEquals(9, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function test3()
@@ -85,7 +88,7 @@ class CCTest extends TestCase
         $arrow = $this->handleEffect($ccEffect);
         $result = $arrow->run(5);
 
-        $this->assertEquals(IOMonad::pure(9), $result);
+        $this->assertEquals(9, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function test4()
@@ -108,6 +111,6 @@ class CCTest extends TestCase
         $arrow = $this->handleEffect($ccEffect);
         $result = $arrow->run(5);
 
-        $this->assertEquals(IOMonad::pure(9), $result);
+        $this->assertEquals(9, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

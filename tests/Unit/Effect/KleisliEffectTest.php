@@ -203,28 +203,6 @@ class KleisliEffectTest extends TestCase
         $this->assertSame($innerEffect, $effect->getArg('effect'));
     }
 
-    // public function testPromptWithoutControlIsCompose()
-    // {
-    //     $effect = KleisliEffect::id()->prompt(KleisliEffect::id());
-    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
-    //     $this->assertEquals('kleisli-effect.compose', $effect->getTag());
-    // }
-
-    // public function testPromptWithControl()
-    // {
-    //     $effect = KleisliEffect::id()
-    //         ->prompt(
-    //             KleisliEffect::id()
-    //                 ->andThen(KleisliEffect::control(function (callable $k) {
-    //                     return call_user_func($k, KleisliEffect::id());
-    //                 }))
-    //                 ->andThen(KleisliEffect::id())
-    //         )
-    //     ;
-    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
-    //     $this->assertEquals('kleisli-effect.composition', $effect->getTag());
-    // }
-
     public function testStubInput()
     {
         $baseEffect = KleisliEffect::id();
@@ -280,26 +258,4 @@ class KleisliEffectTest extends TestCase
         $this->assertEquals('kleisli-effect.reset', $effect->getTag());
         $this->assertSame($innerEffect, $effect->getArg('effect'));
     }
-
-    // public function testResetWithoutShiftIsCompose()
-    // {
-    //     $effect = KleisliEffect::id()->reset(KleisliEffect::id());
-    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
-    //     $this->assertEquals('kleisli-effect.compose', $effect->getTag());
-    // }
-
-    // public function testResettWithShift()
-    // {
-    //     $effect = KleisliEffect::id()
-    //         ->reset(
-    //             KleisliEffect::id()
-    //                 ->andThen(KleisliEffect::shift(function (callable $k) {
-    //                     return call_user_func($k, KleisliEffect::id());
-    //                 }))
-    //                 ->andThen(KleisliEffect::id())
-    //         )
-    //     ;
-    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
-    //     $this->assertEquals('kleisli-effect.composition', $effect->getTag());
-    // }
 }

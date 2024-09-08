@@ -9,6 +9,7 @@ use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
 use Zodimo\DCF\Effect\Runtime;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -17,6 +18,8 @@ use Zodimo\DCF\Effect\Runtime;
  */
 class KleisliEffectHandlerTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testCanCreate()
     {
         $handler = new KleisliEffectHandler();
@@ -30,8 +33,8 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle(KleisliEffect::id(), $runtime);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanHandlerArr()
@@ -42,7 +45,7 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrow = $handler->handle(KleisliEffect::arr($func), $runtime);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Arrow\KleisliIOComposition;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -16,6 +17,8 @@ use Zodimo\DCF\Arrow\KleisliIOComposition;
  */
 class KleisliIOCompositionTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testCanCreateWithId()
     {
         $composition = KleisliIOComposition::id();
@@ -34,9 +37,9 @@ class KleisliIOCompositionTest extends TestCase
         $arrow = KleisliIOComposition::id();
         $result = $arrow->run(10);
 
-        $expectedResult = IOMonad::pure(10);
+        $expectedResult = 10;
 
-        $this->assertEquals($expectedResult, $result);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanRunFromArr()
@@ -49,9 +52,9 @@ class KleisliIOCompositionTest extends TestCase
         $arrow = KleisliIOComposition::arr($func);
         $result = $arrow->run(10);
 
-        $expectedResult = IOMonad::pure(10);
+        $expectedResult = 10;
 
-        $this->assertEquals($expectedResult, $result);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCanAddArrows()
@@ -62,9 +65,9 @@ class KleisliIOCompositionTest extends TestCase
         $arrow = KleisliIOComposition::id()->addArrow($arrow1)->addArrow($arrow2);
         $result = $arrow->run(10);
 
-        $expectedResult = IOMonad::pure(40);
+        $expectedResult = 40;
 
-        $this->assertEquals($expectedResult, $result);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testAndThen()
@@ -78,9 +81,9 @@ class KleisliIOCompositionTest extends TestCase
         $arrow = $composition1->andThen($composition2);
         $result = $arrow->run(10); // comp1 (10 + 10) * 2 = 40 , comp2 = (40*2)+10 = 90
 
-        $expectedResult = IOMonad::pure(90);
+        $expectedResult = 90;
 
-        $this->assertEquals($expectedResult, $result);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testStackSafety()
@@ -92,8 +95,8 @@ class KleisliIOCompositionTest extends TestCase
             $composition = $composition->addArrow($arrow1);
         }
         $result = $composition->run(0);
-        $expectedResult = IOMonad::pure(2000);
+        $expectedResult = 2000;
 
-        $this->assertEquals($expectedResult, $result);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

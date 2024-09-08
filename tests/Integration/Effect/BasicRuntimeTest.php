@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Tests\Integration\Effect;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -17,6 +17,8 @@ use Zodimo\DCF\Effect\KleisliEffectHandler;
  */
 class BasicRuntimeTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testCanCreate()
     {
         $runtime = BasicRuntime::create([]);
@@ -29,7 +31,7 @@ class BasicRuntimeTest extends TestCase
 
         $arrow = $runtime->perform(KleisliEffect::id());
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }

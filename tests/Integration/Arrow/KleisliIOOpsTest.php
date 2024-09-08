@@ -10,6 +10,7 @@ use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Arrow\KleisliIOOps;
 use Zodimo\DCF\Arrow\Tuple;
+use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
  * @internal
@@ -18,6 +19,8 @@ use Zodimo\DCF\Arrow\Tuple;
  */
 class KleisliIOOpsTest extends TestCase
 {
+    use MockClosureTrait;
+
     public function testFirst()
     {
         $func = fn (int $x) => $x + 10;
@@ -25,8 +28,8 @@ class KleisliIOOpsTest extends TestCase
         $kleisliArrow = KleisliIO::liftPure($func);
         $arrowFirst = KleisliIOOps::first($kleisliArrow);
         $result = $arrowFirst->run(Tuple::create(15, 'Joe'));
-        $expectedResult = IOMonad::pure(Tuple::create(25, 'Joe'));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create(25, 'Joe');
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testSecond()
@@ -35,8 +38,8 @@ class KleisliIOOpsTest extends TestCase
         $kleisliArrow = KleisliIO::liftPure($func);
         $arrowSecond = KleisliIOOps::second($kleisliArrow);
         $result = $arrowSecond->run(Tuple::create('Joe', 15));
-        $expectedResult = IOMonad::pure(Tuple::create('Joe', 25));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create('Joe', 25);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testCompose()
@@ -51,8 +54,8 @@ class KleisliIOOpsTest extends TestCase
 
         $arrowComposed = KleisliIOOps::compose($kleisliArrowF, $kleisliArrowG);
         $result = $arrowComposed->run(10);
-        $expectedResult = IOMonad::pure(200);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 200;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testMerge()
@@ -64,8 +67,8 @@ class KleisliIOOpsTest extends TestCase
         $kleisliArrowG = KleisliIO::liftPure($funcG);
         $arrowMerged = KleisliIOOps::merge($kleisliArrowF, $kleisliArrowG);
         $result = $arrowMerged->run(Tuple::create(20, 30));
-        $expectedResult = IOMonad::pure(Tuple::create(30, 300));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create(30, 300);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testSplit()
@@ -77,8 +80,8 @@ class KleisliIOOpsTest extends TestCase
         $kleisliArrowG = KleisliIO::liftPure($funcG);
         $arrowSplit = KleisliIOOps::split($kleisliArrowF, $kleisliArrowG);
         $result = $arrowSplit->run(50);
-        $expectedResult = IOMonad::pure(Tuple::create(60, 500));
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = Tuple::create(60, 500);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testIfThenElseTrue()
@@ -93,8 +96,8 @@ class KleisliIOOpsTest extends TestCase
 
         $arrow = KleisliIOOps::ifThenElse($cond, $then, $else);
         $result = $arrow->run(10);
-        $expectedResult = IOMonad::pure(12);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 12;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testIfThenElseFalse()
@@ -109,9 +112,9 @@ class KleisliIOOpsTest extends TestCase
 
         $arrow = KleisliIOOps::ifThenElse($cond, $then, $else);
         $result = $arrow->run(100);
-        $expectedResult = IOMonad::pure(98);
+        $expectedResult = 98;
 
-        $this->assertEquals($expectedResult, $result);
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testWhileDo()
@@ -124,8 +127,8 @@ class KleisliIOOpsTest extends TestCase
 
         $arrow = KleisliIOOps::whileDo($check, $body);
         $result = $arrow->run(0);
-        $expectedResult = IOMonad::pure(10);
-        $this->assertEquals($expectedResult, $result);
+        $expectedResult = 10;
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 
     public function testArrayFill1000()
@@ -143,8 +146,7 @@ class KleisliIOOpsTest extends TestCase
 
         $arrow = KleisliIOOps::whileDo($check, $body);
 
-        // @phpstan-ignore argument.type
-        $result = $arrow->run([])->unwrapSuccess(fn ($_) => []);
+        $result = $arrow->run([])->unwrapSuccess($this->createClosureNotCalled());
         $this->assertEquals(1000, count($result));
     }
 
@@ -184,7 +186,7 @@ class KleisliIOOpsTest extends TestCase
         $arrow = KleisliIOOps::bracket($acquire, $mockDuring, $mockRelease);
         $result = $arrow->run(10);
         $this->assertTrue($result->isFailure(), "{$variant}: isFailure");
-        $this->assertSame($exception, $result->unwrapFailure(fn ($_) => new \RuntimeException('Is wasnt a failure')), "{$variant}: isFailure");
+        $this->assertSame($exception, $result->unwrapFailure($this->createClosureNotCalled()), "{$variant}: isFailure");
     }
 
     public function testBracketV5()
@@ -229,13 +231,13 @@ class KleisliIOOpsTest extends TestCase
         $arrow = KleisliIOOps::bracket($acquire, $during, $release);
         $result = $arrow->run(10);
 
-        $expectedResult = IOMonad::pure(Tuple::create(
+        $expectedResult = Tuple::create(
             IOMonad::fail($exceptionDuring),
             IOMonad::fail($exceptionRelease)
-        ));
+        );
 
         $this->assertTrue($result->isSuccess(), "{$variant}: isSuccess");
-        $this->assertEquals($expectedResult, $result, "{$variant}: result");
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()), "{$variant}: result");
     }
 
     public function testBracketV6()
@@ -277,13 +279,13 @@ class KleisliIOOpsTest extends TestCase
         $arrow = KleisliIOOps::bracket($acquire, $during, $release);
         $result = $arrow->run(10);
 
-        $expectedResult = IOMonad::pure(Tuple::create(
+        $expectedResult = Tuple::create(
             IOMonad::pure(20),
             IOMonad::fail($exceptionRelease)
-        ));
+        );
 
         $this->assertTrue($result->isSuccess(), "{$variant}: isSuccess");
-        $this->assertEquals($expectedResult, $result, "{$variant}: result");
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()), "{$variant}: result");
     }
 
     public function testBracketV7()
@@ -331,12 +333,12 @@ class KleisliIOOpsTest extends TestCase
         $arrow = KleisliIOOps::bracket($acquire, $during, $release);
         $result = $arrow->run(10);
 
-        $expectedResult = IOMonad::pure(Tuple::create(
+        $expectedResult = Tuple::create(
             IOMonad::pure(20),
             IOMonad::pure(null),
-        ));
+        );
 
         $this->assertTrue($result->isSuccess(), "{$variant}: isSuccess");
-        $this->assertEquals($expectedResult, $result, "{$variant}: result");
+        $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()), "{$variant}: result");
     }
 }
