@@ -65,6 +65,8 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 $arrowF = $runtime->perform($effect->getArg('effectF'));
                 $arrowG = $runtime->perform($effect->getArg('effectG'));
 
+                // @phpstan-ignore return.type
+                // @phpstan-ignore return.type
                 return KleisliIOOps::merge($arrowF, $arrowG);
 
             case 'kleisli-effect.split':
