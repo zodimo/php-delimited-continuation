@@ -258,4 +258,28 @@ class KleisliEffectHandlerTest extends TestCase
         $this->assertEquals(IOMonad::pure(29), $arrow->run(Either::left(9)), '9 < 10, 9 + 20');
         $this->assertEquals(IOMonad::pure(21), $arrow->run(Either::right(11)), '11 > 10, 11 + 10');
     }
+
+    public function testCanHandlePrompt()
+    {
+        $innerEffect = KleisliEffect::id();
+        $effect = KleisliEffect::prompt($innerEffect);
+
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($effect, $runtime);
+        $this->assertEquals(IOMonad::pure(10), $arrow->run(10));
+    }
+
+    public function testCanHandleReset()
+    {
+        $innerEffect = KleisliEffect::id();
+        $effect = KleisliEffect::reset($innerEffect);
+
+        $handler = new KleisliEffectHandler();
+        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+
+        $arrow = $handler->handle($effect, $runtime);
+        $this->assertEquals(IOMonad::pure(10), $arrow->run(10));
+    }
 }

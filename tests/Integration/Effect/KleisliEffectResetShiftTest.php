@@ -174,28 +174,6 @@ class KleisliEffectResetShiftTest extends TestCase
 
     public function testRS8()
     {
-        // (reset (+ (shift k (+ 10 (k 100))) (shift kk 1)))
-        // => (reset ((λk. (+ 10 (k 100))) (λv. (reset (+ v (shift kk 1))))))
-        // ; Here, E[v] = (+ v (shift kk 1))
-        // => (reset ((λk. (+ 10 (k 100))) (λv. (reset ((λkk. 1) (λw. (+ v w)))))))
-        // ; Here, E'[w] = (+ v w)
-        // ; Because of the reset, `E'[w]` catches only `(+ v w)`
-        // ; which gets discarded right away.
-        // => (reset ((λk. (+ 10 (k 100))) (λv. (reset 1))))
-        // => (reset ((λk. (+ 10 (k 100))) (λv. 1)))
-        // => (reset (+ 10 ((λv. 1) 100)))
-        // => (reset (+ 10 1))
-        // => (reset 11)
-        // => 11
-
-        /**
-         *   (reset
-         *      (+
-         *          (shift k (+ 10 (k 100)))
-         *          (shift kk 1)
-         *      )
-         * ).
-         */
         $effect = KleisliEffect::id()
             ->reset(
                 KleisliEffect::liftPure(fn ($a) => $a + 100)

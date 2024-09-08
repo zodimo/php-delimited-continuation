@@ -127,6 +127,16 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 // @phpstan-ignore return.type
                 return KleisliIOOps::choice($onLeft, $onRight);
 
+            case 'kleisli-effect.prompt':
+                $thisEffect = $effect->getArg('effect');
+
+                return $runtime->perform(DelimitedEffectOps::prompt($thisEffect));
+
+            case 'kleisli-effect.reset':
+                $thisEffect = $effect->getArg('effect');
+
+                return $runtime->perform(DelimitedEffectOps::reset($thisEffect));
+
             default:
                 throw new \RuntimeException("KleisliEffectHandler: unknown tag: {$tag}");
         }

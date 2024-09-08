@@ -57,13 +57,15 @@ class KleisliEffectPromptControlTest extends TestCase
          * extract the control Effect.
          */
         $effect = KleisliEffect::id()
-            ->prompt(
-                KleisliEffect::id()
-                    ->control(
-                        function (callable $k) {
-                            return call_user_func($k, KleisliEffect::id());
-                        }
-                    )
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::id()
+                        ->control(
+                            function (callable $k) {
+                                return call_user_func($k, KleisliEffect::id());
+                            }
+                        )
+                )
             )
             ->andThen(
                 KleisliEffect::id()
@@ -80,15 +82,17 @@ class KleisliEffectPromptControlTest extends TestCase
         $mockedEffect->expects($this->never())->method('getArg');
 
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
-            ->prompt(
-                KleisliEffect::id()
-                    ->andThen($mockedEffect)
-                    ->control(
-                        function (callable $_) {
-                            return KleisliEffect::liftPure(fn ($x) => $x + 10);
-                        }
-                    )
-                    ->andThen($mockedEffect)
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::id()
+                        ->andThen($mockedEffect)
+                        ->control(
+                            function (callable $_) {
+                                return KleisliEffect::liftPure(fn ($x) => $x + 10);
+                            }
+                        )
+                        ->andThen($mockedEffect)
+                )
             )
         ;
 
@@ -99,15 +103,17 @@ class KleisliEffectPromptControlTest extends TestCase
     public function testPC3a()
     {
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
-            ->prompt(
-                KleisliEffect::liftPure(fn ($x) => $x + 100)
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 10));
-                            }
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 10));
+                                }
+                            )
                         )
-                    )
+                )
             )
         ;
 
@@ -118,16 +124,18 @@ class KleisliEffectPromptControlTest extends TestCase
     public function testPC3b()
     {
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
-            ->prompt(
-                KleisliEffect::liftPure(fn ($x) => $x + 100)
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 10));
-                            }
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 10));
+                                }
+                            )
+                                ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 200))
                         )
-                            ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 200))
-                    )
+                )
             )
         ;
 
@@ -138,17 +146,19 @@ class KleisliEffectPromptControlTest extends TestCase
     public function testPC4()
     {
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 100) // not pass on because input stubbed in control
-            ->prompt(
-                KleisliEffect::liftPure(fn ($x) => $x + 100)
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                // all the effect will be run eveytime k is called...
-                                // stub the prompt input
-                                return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 10))->stubInput(10);
-                            }
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    // all the effect will be run eveytime k is called...
+                                    // stub the prompt input
+                                    return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 10))->stubInput(10);
+                                }
+                            )
                         )
-                    )
+                )
             )
         ;
 
@@ -159,28 +169,30 @@ class KleisliEffectPromptControlTest extends TestCase
     public function testPC5()
     {
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
-            ->prompt(
-                KleisliEffect::liftPure(fn ($x) => $x + 100)
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                $stubWith = function (KleisliEffect $effect, $stubbedInput) {
-                                    return $effect->stubInput($stubbedInput);
-                                };
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    $stubWith = function (KleisliEffect $effect, $stubbedInput) {
+                                        return $effect->stubInput($stubbedInput);
+                                    };
 
-                                // all the effect will be run when k is called...
-                                /**
-                                 * @var KleisliEffect $testEffect
-                                 */
-                                $testEffect = call_user_func($k, KleisliEffect::id());
-                                $cond = $stubWith($testEffect, 150)->andThen(KleisliEffect::liftPure(fn ($value) => $value > 200));
-                                $then = KleisliEffect::liftPure(fn ($x) => $x - 50);
-                                $else = KleisliEffect::liftPure(fn ($x) => $x + 20);
+                                    // all the effect will be run when k is called...
+                                    /**
+                                     * @var KleisliEffect $testEffect
+                                     */
+                                    $testEffect = call_user_func($k, KleisliEffect::id());
+                                    $cond = $stubWith($testEffect, 150)->andThen(KleisliEffect::liftPure(fn ($value) => $value > 200));
+                                    $then = KleisliEffect::liftPure(fn ($x) => $x - 50);
+                                    $else = KleisliEffect::liftPure(fn ($x) => $x + 20);
 
-                                return call_user_func($k, KleisliEffect::ifThenElse($cond, $then, $else));
-                            }
+                                    return call_user_func($k, KleisliEffect::ifThenElse($cond, $then, $else));
+                                }
+                            )
                         )
-                    )
+                )
             )
         ;
 
@@ -191,28 +203,30 @@ class KleisliEffectPromptControlTest extends TestCase
     public function testPC6()
     {
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
-            ->prompt(
-                KleisliEffect::liftPure(fn ($x) => $x + 100)
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                $stubWith = function (KleisliEffect $effect, $stubbedInput) {
-                                    return $effect->stubInput($stubbedInput);
-                                };
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    $stubWith = function (KleisliEffect $effect, $stubbedInput) {
+                                        return $effect->stubInput($stubbedInput);
+                                    };
 
-                                // all the effect will be run when k is called...
-                                /**
-                                 * @var KleisliEffect $testEffect
-                                 */
-                                $testEffect = call_user_func($k, KleisliEffect::id());
-                                $cond = $stubWith($testEffect, 0)->andThen(KleisliEffect::liftPure(fn ($value) => $value > 200));
-                                $then = KleisliEffect::liftPure(fn ($x) => $x - 50);
-                                $else = KleisliEffect::liftPure(fn ($x) => $x + 20);
+                                    // all the effect will be run when k is called...
+                                    /**
+                                     * @var KleisliEffect $testEffect
+                                     */
+                                    $testEffect = call_user_func($k, KleisliEffect::id());
+                                    $cond = $stubWith($testEffect, 0)->andThen(KleisliEffect::liftPure(fn ($value) => $value > 200));
+                                    $then = KleisliEffect::liftPure(fn ($x) => $x - 50);
+                                    $else = KleisliEffect::liftPure(fn ($x) => $x + 20);
 
-                                return call_user_func($k, KleisliEffect::ifThenElse($cond, $then, $else));
-                            }
+                                    return call_user_func($k, KleisliEffect::ifThenElse($cond, $then, $else));
+                                }
+                            )
                         )
-                    )
+                )
             )
         ;
 
@@ -223,22 +237,24 @@ class KleisliEffectPromptControlTest extends TestCase
     public function testPC7Multishot()
     {
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 100)
-            ->prompt(
-                KleisliEffect::liftPure(fn ($x) => $x + 100)
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                $effectF = KleisliEffect::liftPure(fn ($x) => $x + 50);
-                                $effectG = KleisliEffect::liftPure(fn ($x) => $x + 100);
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    $effectF = KleisliEffect::liftPure(fn ($x) => $x + 50);
+                                    $effectG = KleisliEffect::liftPure(fn ($x) => $x + 100);
 
-                                return KleisliEffect::split(
-                                    call_user_func($k, $effectF),
-                                    call_user_func($k, $effectG),
-                                );
-                            }
+                                    return KleisliEffect::split(
+                                        call_user_func($k, $effectF),
+                                        call_user_func($k, $effectG),
+                                    );
+                                }
+                            )
+                                ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 200))
                         )
-                            ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 200))
-                    )
+                )
             )
         ;
 
@@ -258,40 +274,42 @@ class KleisliEffectPromptControlTest extends TestCase
         // allow multiple controls within the prompt scope
 
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 33)
-            ->prompt(
-                KleisliEffect::liftPure(fn ($x) => $x + 100)
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                return call_user_func(
-                                    $k,
-                                    KleisliEffect::liftPure(fn ($x) => $x + 10)
-                                    // ->andThen(
-                                    //     KleisliEffect::control(
-                                    //         function (callable $k) {
-                                    //             return call_user_func(
-                                    //                 $k,
-                                    //                 KleisliEffect::liftPure(fn ($x) => $x + 10)
-                                    //             );
-                                    //         }
-                                    //     )
-                                    // )
-                                );
-                            }
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    return call_user_func(
+                                        $k,
+                                        KleisliEffect::liftPure(fn ($x) => $x + 10)
+                                            ->andThen(
+                                                KleisliEffect::control(
+                                                    function (callable $k) {
+                                                        return call_user_func(
+                                                            $k,
+                                                            KleisliEffect::liftPure(fn ($x) => $x + 10)
+                                                        );
+                                                    }
+                                                )
+                                            )
+                                    );
+                                }
+                            )
                         )
-                    )
-                    ->andThen(
-                        KleisliEffect::control(
-                            function (callable $k) {
-                                return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 20));
-                            }
+                        ->andThen(
+                            KleisliEffect::control(
+                                function (callable $k) {
+                                    return call_user_func($k, KleisliEffect::liftPure(fn ($x) => $x + 20));
+                                }
+                            )
                         )
-                    )
-                    ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 55))
+                        ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 55))
+                )
             )
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(IOMonad::pure(10 + 33 + 100 + 10 + 20 + 55), $arrow->run(10));
+        $this->assertEquals(IOMonad::pure(10 + 33 + 100 + 10 + 20 + 10 + 55), $arrow->run(10));
     }
 }

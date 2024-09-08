@@ -57,10 +57,16 @@ class KleisliEffectTest extends TestCase
         $idEffect1 = KleisliEffect::arr($f);
         $idEffect2 = KleisliEffect::arr($f);
         $effect = KleisliEffect::compose($idEffect1, $idEffect2);
-        $this->assertEquals('kleisli-effect.compose', $effect->getTag(), "{$variant}: tag");
+
+        $expectedArgs = [
+            'effects' => [
+                $idEffect1,
+                $idEffect2,
+            ],
+        ];
+        $this->assertEquals('kleisli-effect.composition', $effect->getTag(), "{$variant}: tag");
         $this->assertNotSame($idEffect1, $idEffect2, "{$variant}:idEffect1!==idEffect2");
-        $this->assertEquals($idEffect1, $effect->getArg('effectF'), "{$variant}: effectF");
-        $this->assertEquals($idEffect2, $effect->getArg('effectG'), "{$variant}: effectG");
+        $this->assertSame($expectedArgs, $effect->getArgs(), "{$variant}: effects");
     }
 
     public function testCompose2()
@@ -309,27 +315,36 @@ class KleisliEffectTest extends TestCase
         $this->assertArrayHasKey('f', $effect->getArgs());
     }
 
-    public function testPromptWithoutControlIsCompose()
+    public function testPrompt()
     {
-        $effect = KleisliEffect::id()->prompt(KleisliEffect::id());
+        $innerEffect = KleisliEffect::id();
+        $effect = KleisliEffect::prompt($innerEffect);
         $this->assertInstanceOf(KleisliEffect::class, $effect);
-        $this->assertEquals('kleisli-effect.compose', $effect->getTag());
+        $this->assertEquals('kleisli-effect.prompt', $effect->getTag());
+        $this->assertSame($innerEffect, $effect->getArg('effect'));
     }
 
-    public function testPromptWithControl()
-    {
-        $effect = KleisliEffect::id()
-            ->prompt(
-                KleisliEffect::id()
-                    ->andThen(KleisliEffect::control(function (callable $k) {
-                        return call_user_func($k, KleisliEffect::id());
-                    }))
-                    ->andThen(KleisliEffect::id())
-            )
-        ;
-        $this->assertInstanceOf(KleisliEffect::class, $effect);
-        $this->assertEquals('kleisli-effect.composition', $effect->getTag());
-    }
+    // public function testPromptWithoutControlIsCompose()
+    // {
+    //     $effect = KleisliEffect::id()->prompt(KleisliEffect::id());
+    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
+    //     $this->assertEquals('kleisli-effect.compose', $effect->getTag());
+    // }
+
+    // public function testPromptWithControl()
+    // {
+    //     $effect = KleisliEffect::id()
+    //         ->prompt(
+    //             KleisliEffect::id()
+    //                 ->andThen(KleisliEffect::control(function (callable $k) {
+    //                     return call_user_func($k, KleisliEffect::id());
+    //                 }))
+    //                 ->andThen(KleisliEffect::id())
+    //         )
+    //     ;
+    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
+    //     $this->assertEquals('kleisli-effect.composition', $effect->getTag());
+    // }
 
     public function testStubInput()
     {
@@ -378,25 +393,34 @@ class KleisliEffectTest extends TestCase
         $this->assertArrayHasKey('f', $effect->getArgs());
     }
 
-    public function testResetWithoutShiftIsCompose()
+    public function testReset()
     {
-        $effect = KleisliEffect::id()->reset(KleisliEffect::id());
+        $innerEffect = KleisliEffect::id();
+        $effect = KleisliEffect::reset($innerEffect);
         $this->assertInstanceOf(KleisliEffect::class, $effect);
-        $this->assertEquals('kleisli-effect.compose', $effect->getTag());
+        $this->assertEquals('kleisli-effect.reset', $effect->getTag());
+        $this->assertSame($innerEffect, $effect->getArg('effect'));
     }
 
-    public function testResettWithShift()
-    {
-        $effect = KleisliEffect::id()
-            ->reset(
-                KleisliEffect::id()
-                    ->andThen(KleisliEffect::shift(function (callable $k) {
-                        return call_user_func($k, KleisliEffect::id());
-                    }))
-                    ->andThen(KleisliEffect::id())
-            )
-        ;
-        $this->assertInstanceOf(KleisliEffect::class, $effect);
-        $this->assertEquals('kleisli-effect.composition', $effect->getTag());
-    }
+    // public function testResetWithoutShiftIsCompose()
+    // {
+    //     $effect = KleisliEffect::id()->reset(KleisliEffect::id());
+    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
+    //     $this->assertEquals('kleisli-effect.compose', $effect->getTag());
+    // }
+
+    // public function testResettWithShift()
+    // {
+    //     $effect = KleisliEffect::id()
+    //         ->reset(
+    //             KleisliEffect::id()
+    //                 ->andThen(KleisliEffect::shift(function (callable $k) {
+    //                     return call_user_func($k, KleisliEffect::id());
+    //                 }))
+    //                 ->andThen(KleisliEffect::id())
+    //         )
+    //     ;
+    //     $this->assertInstanceOf(KleisliEffect::class, $effect);
+    //     $this->assertEquals('kleisli-effect.composition', $effect->getTag());
+    // }
 }
