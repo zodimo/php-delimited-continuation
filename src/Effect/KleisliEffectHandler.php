@@ -48,12 +48,6 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 // @phpstan-ignore return.type
                 return KleisliIOOps::second($arrow);
 
-            case 'kleisli-effect.compose':
-                $arrowF = $runtime->perform($effect->getArg('effectF'));
-                $arrowG = $runtime->perform($effect->getArg('effectG'));
-
-                return KleisliIOOps::compose($arrowF, $arrowG);
-
             case 'kleisli-effect.composition':
                 $effects = $effect->getArg('effects');
                 $arrows = array_map(fn ($eff) => $runtime->perform($eff), $effects);
@@ -71,7 +65,6 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
                 $arrowF = $runtime->perform($effect->getArg('effectF'));
                 $arrowG = $runtime->perform($effect->getArg('effectG'));
 
-                // @phpstan-ignore return.type
                 return KleisliIOOps::merge($arrowF, $arrowG);
 
             case 'kleisli-effect.split':
