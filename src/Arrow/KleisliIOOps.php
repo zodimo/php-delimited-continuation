@@ -112,17 +112,17 @@ class KleisliIOOps
      * f *** g = first f >>> arr swap >>> first g >>> arr swap
      *  where swap ~(x,y) = (y,x)
      *
-     * @template _BF
-     * @template _BG
-     * @template _CF
-     * @template _CG
-     * @template _EF
-     * @template _EG
+     * @template _INPUTF
+     * @template _INPUTG
+     * @template _OUTPUTF
+     * @template _OUTPUTG
+     * @template _ERRF
+     * @template _ERRG
      *
-     * @param KleisliIO<IOMonad, _BF, _CF, _EF> $f
-     * @param KleisliIO<IOMonad, _BG, _CG, _EG> $g
+     * @param KleisliIO<IOMonad, _INPUTF, _OUTPUTF, _ERRF> $f
+     * @param KleisliIO<IOMonad, _INPUTG, _OUTPUTG, _ERRG> $g
      *
-     * @return KleisliIO<IOMonad, Tuple<_BF, _BG>, Tuple<_CF,  _CG>, _EF|_EG>
+     * @return KleisliIO<IOMonad, Tuple<_INPUTF, _INPUTG>, Tuple<_OUTPUTF,_OUTPUTG>, _ERRF|_ERRG>
      */
     public static function merge(KleisliIO $f, KleisliIO $g): KleisliIO
     {
@@ -150,16 +150,16 @@ class KleisliIOOps
      * (&&&) :: a b c -> a b c' -> a b (c,c')
      * f &&& g = arr (\b -> (b,b)) >>> f *** g.
      *
-     * @template _B
-     * @template _CF
-     * @template _CG
-     * @template _EF
-     * @template _EG
+     * @template _INPUT
+     * @template _OUPUTF
+     * @template _OUTPUTG
+     * @template _ERRF
+     * @template _ERRG
      *
-     * @param KleisliIO<IOMonad, _B, _CF, _EF> $f
-     * @param KleisliIO<IOMonad, _B, _CG, _EG> $g
+     * @param KleisliIO<IOMonad, _INPUT, _OUPUTF, _ERRF>  $f
+     * @param KleisliIO<IOMonad, _INPUT, _OUTPUTG, _ERRG> $g
      *
-     * @return KleisliIO<IOMonad, _B,  Tuple<_CF,  _CG>, _EF|_EG>
+     * @return KleisliIO<IOMonad, _INPUT,  Tuple<_OUPUTF,  _OUTPUTG>, _ERRF|_ERRG>
      */
     public static function split(Arrow $f, Arrow $g): KleisliIO
     {
