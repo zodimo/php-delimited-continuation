@@ -128,10 +128,6 @@ class KleisliIOOps
      */
     public static function merge(KleisliIO $f, KleisliIO $g): KleisliIO
     {
-        $swap = function (Tuple $t): Tuple {
-            return Tuple::create($t->snd(), $t->fst());
-        };
-
         /**
          * 1:1 translation.
          * first f >>> arr swap >>> first g >>> arr swap.
@@ -140,10 +136,10 @@ class KleisliIOOps
         // @phpstan-ignore return.type
         return KleisliIOOps::first($f)->andThen(
             // @phpstan-ignore argument.type
-            KleisliIO::arr(fn (Tuple $t) => IOMonad::pure($swap($t)))
+            KleisliIO::arr(fn (Tuple $t) => IOMonad::pure($t->swap()))
         )->andThen(
             // @phpstan-ignore argument.type
-            KleisliIOOps::first($g)->andThen(KleisliIO::arr(fn (Tuple $t) => IOMonad::pure($swap($t))))
+            KleisliIOOps::first($g)->andThen(KleisliIO::arr(fn (Tuple $t) => IOMonad::pure($t->swap())))
         );
     }
 
