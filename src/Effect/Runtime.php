@@ -6,7 +6,6 @@ namespace Zodimo\DCF\Effect;
 
 use Zodimo\BaseReturn\IOMonad;
 use Zodimo\DCF\Arrow\KleisliIO;
-use Zodimo\DCF\Arrow\KleisliIOComposition;
 
 interface Runtime
 {
@@ -17,7 +16,7 @@ interface Runtime
      *
      * @param EffectInterface<_INPUT, _OUTPUT, _ERR> $effect
      *
-     * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ERR>|KleisliIOComposition< _INPUT, _OUTPUT, _ERR>
+     * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ERR>
      */
     public function perform(EffectInterface $effect);
 }

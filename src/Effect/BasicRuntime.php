@@ -7,17 +7,16 @@ namespace Zodimo\DCF\Effect;
 use Zodimo\BaseReturn\IOMonad;
 use Zodimo\BaseReturn\Option;
 use Zodimo\DCF\Arrow\KleisliIO;
-use Zodimo\DCF\Arrow\KleisliIOComposition;
 
 class BasicRuntime implements Runtime
 {
     /**
-     * @var array<string, KleisliCompositionEffectHandlerInterface|KleisliEffectHandlerInterface>
+     * @var array<string, KleisliEffectHandlerInterface>
      */
     private array $handlers;
 
     /**
-     * @param array<string, KleisliCompositionEffectHandlerInterface|KleisliEffectHandlerInterface> $handlers
+     * @param array<string, KleisliEffectHandlerInterface> $handlers
      */
     private function __construct(array $handlers)
     {
@@ -25,7 +24,7 @@ class BasicRuntime implements Runtime
     }
 
     /**
-     * @param array<string, KleisliCompositionEffectHandlerInterface|KleisliEffectHandlerInterface> $handlers
+     * @param array<string, KleisliEffectHandlerInterface> $handlers
      */
     public static function create(array $handlers)
     {
@@ -39,7 +38,7 @@ class BasicRuntime implements Runtime
      *
      * @param EffectInterface<_INPUT, _OUTPUT, _ERR> $effect
      *
-     * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ERR>|KleisliIOComposition<_INPUT, _OUTPUT, _ERR>
+     * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ERR>
      */
     public function perform(EffectInterface $effect)
     {
@@ -61,7 +60,7 @@ class BasicRuntime implements Runtime
     /**
      * @param class-string $effectClass
      *
-     * @return Option<KleisliCompositionEffectHandlerInterface|KleisliEffectHandlerInterface>
+     * @return Option<KleisliEffectHandlerInterface>
      */
     public function getHandlerForEffect(string $effectClass): Option
     {
