@@ -237,6 +237,7 @@ class KleisliIOOpsTest extends TestCase
         );
 
         $this->assertTrue($result->isSuccess(), "{$variant}: isSuccess");
+        // @phpstan-ignore argument.type
         $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()), "{$variant}: result");
     }
 
