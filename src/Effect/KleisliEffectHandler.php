@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Effect;
 
-use Zodimo\DCF\Arrow\IOMonad;
+use Zodimo\BaseReturn\IOMonad;
 use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Arrow\KleisliIOComposition;
 use Zodimo\DCF\Arrow\KleisliIOOps;

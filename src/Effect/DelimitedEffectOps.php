@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Effect;
 
 use Zodimo\BaseReturn\Option;
-use Zodimo\DCF\Arrow\Tuple;
+use Zodimo\BaseReturn\Tuple;
 
 class DelimitedEffectOps
 {

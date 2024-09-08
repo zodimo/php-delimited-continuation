@@ -6,10 +6,10 @@ namespace Zodimo\DCF\Tests\Integration\Arrow;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Zodimo\DCF\Arrow\IOMonad;
+use Zodimo\BaseReturn\IOMonad;
+use Zodimo\BaseReturn\Tuple;
 use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Arrow\KleisliIOOps;
-use Zodimo\DCF\Arrow\Tuple;
 use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**

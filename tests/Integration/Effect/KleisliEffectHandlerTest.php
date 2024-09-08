@@ -6,8 +6,8 @@ namespace Zodimo\DCF\Tests\Integration\Effect;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\BaseReturn\Either;
-use Zodimo\DCF\Arrow\IOMonad;
-use Zodimo\DCF\Arrow\Tuple;
+use Zodimo\BaseReturn\IOMonad;
+use Zodimo\BaseReturn\Tuple;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;

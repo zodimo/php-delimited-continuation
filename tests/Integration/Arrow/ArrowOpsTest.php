@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Tests\Integration\Arrow;
 
 use PHPUnit\Framework\TestCase;
+use Zodimo\BaseReturn\Tuple;
 use Zodimo\DCF\Arrow\ArrowF;
 use Zodimo\DCF\Arrow\ArrowOps;
-use Zodimo\DCF\Arrow\Tuple;
 
 /**
  * @internal

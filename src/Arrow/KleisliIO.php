@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Arrow;
 
+use Zodimo\BaseReturn\IOMonad;
+
 /**
  * it assumes that a handles exists to perform A->E[B].
  *

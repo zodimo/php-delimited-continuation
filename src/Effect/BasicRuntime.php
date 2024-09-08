@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Effect;
 
+use Zodimo\BaseReturn\IOMonad;
 use Zodimo\BaseReturn\Option;
-use Zodimo\DCF\Arrow\IOMonad;
 use Zodimo\DCF\Arrow\KleisliIO;
 use Zodimo\DCF\Arrow\KleisliIOComposition;
 

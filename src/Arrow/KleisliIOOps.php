@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Arrow;
 
 use Zodimo\BaseReturn\Either;
+use Zodimo\BaseReturn\IOMonad;
+use Zodimo\BaseReturn\Tuple;
 
 class KleisliIOOps
 {

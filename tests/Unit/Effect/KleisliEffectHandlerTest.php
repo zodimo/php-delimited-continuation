@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Tests\Unit\Effect;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\DCF\Arrow\IOMonad;
+use Zodimo\BaseReturn\IOMonad;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
 use Zodimo\DCF\Effect\Runtime;
