@@ -271,7 +271,7 @@ class KleisliEffectPromptControlTest extends TestCase
         $effect = KleisliEffect::liftPure(fn ($x) => $x + 33)
             ->andThen(
                 KleisliEffect::prompt(
-                    KleisliEffect::liftPure(fn ($x) => $x + 100)
+                    KleisliEffect::liftPure(fn ($x) => $x * 2)
                         ->andThen(
                             KleisliEffect::control(
                                 function (callable $k) {
@@ -305,6 +305,6 @@ class KleisliEffectPromptControlTest extends TestCase
         ;
 
         $arrow = $this->handle($effect);
-        $this->assertEquals(10 + 33 + 100 + 10 + 20 + 10 + 55, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
+        $this->assertEquals((10 + 33) * 2 + 10 + 20 + 10 + 55, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
     }
 }
