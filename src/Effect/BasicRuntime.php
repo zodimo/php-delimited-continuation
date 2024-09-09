@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Zodimo\DCF\Effect;
 
-use Zodimo\BaseReturn\IOMonad;
+use Zodimo\Arrow\KleisliIO;
 use Zodimo\BaseReturn\Option;
-use Zodimo\DCF\Arrow\KleisliIO;
 
 class BasicRuntime implements Runtime
 {
@@ -38,7 +37,7 @@ class BasicRuntime implements Runtime
      *
      * @param EffectInterface<_INPUT, _OUTPUT, _ERR> $effect
      *
-     * @return KleisliIO<IOMonad, _INPUT, _OUTPUT, _ERR>
+     * @return KleisliIO<_INPUT, _OUTPUT, _ERR>
      */
     public function perform(EffectInterface $effect)
     {

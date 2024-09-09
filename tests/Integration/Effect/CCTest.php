@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Zodimo\DCF\Tests\Integration\Effect;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\BaseReturn\IOMonad;
-use Zodimo\DCF\Arrow\KleisliIO;
+use Zodimo\Arrow\KleisliIO;
 use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
@@ -36,7 +35,7 @@ class CCTest extends TestCase
      *
      * @param KleisliEffect<INPUT,OUTPUT,ERR> $effect
      *
-     * @return KleisliIO<IOMonad,INPUT,OUTPUT,ERR>
+     * @return KleisliIO<INPUT,OUTPUT,ERR>
      */
     public function handleEffect(KleisliEffect $effect): KleisliIO
     {
