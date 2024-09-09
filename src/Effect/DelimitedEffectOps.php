@@ -115,21 +115,32 @@ class DelimitedEffectOps
                 $controlEffect = $control->snd();
                 $controlF = $controlEffect->getArg('f');
 
-                // hole is an arrow...
-                $effectStackWithHole = function (KleisliEffect $hole) use ($control, $effects, $compositionTag) {
+                // hole can be an effect...
+                // valid terms for the hole
+                // kleisliEffect or value
+                // on value,  stub the stack and replace the hole with id
+                // on effect put the effect in the place of the hole
+                $effectStackWithHole = function ($hole) use ($control, $effects, $compositionTag) {
                     $controlIndex = $control->fst();
                     $initialEffects = array_slice($effects, 0, $controlIndex);
                     $afterEffects = ($controlIndex < count($effects)) ? array_slice($effects, $controlIndex + 1) : [];
 
+                    if ($hole instanceof KleisliEffect) {
+                        $newEffectStack = [
+                            ...$initialEffects,
+                            KleisliEffect::prompt($hole),
+                            ...$afterEffects,
+                        ];
+
+                        return KleisliEffect::create(Operation::create($compositionTag)->setArg('effects', $newEffectStack));
+                    }
                     $newEffectStack = [
                         ...$initialEffects,
-                        KleisliEffect::prompt($hole),
+                        KleisliEffect::id(),
                         ...$afterEffects,
                     ];
 
-                    // sequentially compose...
-
-                    return KleisliEffect::create(Operation::create($compositionTag)->setArg('effects', $newEffectStack));
+                    return KleisliEffect::create(Operation::create($compositionTag)->setArg('effects', $newEffectStack))->stubInput($hole);
                 };
 
                 return KleisliEffect::prompt(call_user_func($controlF, $effectStackWithHole));

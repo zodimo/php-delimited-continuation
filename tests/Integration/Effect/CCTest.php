@@ -6,6 +6,8 @@ namespace Zodimo\DCF\Tests\Integration\Effect;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\Arrow\KleisliIO;
+use Zodimo\BaseReturn\IOMonad;
+use Zodimo\BaseReturn\Tuple;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
 use Zodimo\DCF\Effect\Router\BasicEffectRouter;
@@ -79,10 +81,14 @@ class CCTest extends TestCase
         // >>= (return . (+ 4)))
         // -- 9
 
-        $ccEffect = KleisliEffect::id()->prompt(
-            $this->abortP(KleisliEffect::id()->stubInput(5))
-                ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 6))
-        )->andThen(KleisliEffect::liftPure(fn ($x) => $x + 4));
+        $ccEffect = KleisliEffect::id()
+            ->andThen(
+                KleisliEffect::prompt(
+                    $this->abortP(KleisliEffect::id()->stubInput(5))
+                        ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 6))
+                )->andThen(KleisliEffect::liftPure(fn ($x) => $x + 4))
+            )
+        ;
 
         $arrow = $this->handleEffect($ccEffect);
         $result = $arrow->run(5);
@@ -100,16 +106,76 @@ class CCTest extends TestCase
         // -- 9
 
         $ccEffect = KleisliEffect::id()
-            ->prompt(KleisliEffect::id())
-            ->prompt(
-                $this->abortP(KleisliEffect::id()->stubInput(5))
-                    ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 6))
-            )->andThen(KleisliEffect::liftPure(fn ($x) => $x + 4))
+            ->andThen(
+                KleisliEffect::prompt(
+                    KleisliEffect::id()
+                )->andThen(
+                    KleisliEffect::prompt(
+                        $this->abortP(KleisliEffect::id()->stubInput(5))
+                            ->andThen(KleisliEffect::liftPure(fn ($x) => $x + 6))
+                    )->andThen(KleisliEffect::liftPure(fn ($x) => $x + 4))
+                )
+            )
         ;
 
         $arrow = $this->handleEffect($ccEffect);
         $result = $arrow->run(5);
 
         $this->assertEquals(9, $result->unwrapSuccess($this->createClosureNotCalled()));
+    }
+
+    public function testExample()
+    {
+        // (prompt (+ 1 (control k (k 3))))
+        // The code is evaluated as follows:
+
+        // (prompt (+ 1 (control k (k 3))))
+        // => (prompt ((λ (k) (k 3)) (λ (x) (+ 1 x))))
+        // => (prompt ((λ (x) (+ 1 x)) 3))
+        // => (prompt (+ 1 3)) => (prompt 4) => 4
+
+        // prompt resturns a arrow that does not take a value..
+        // ie a thunk to produce the value
+
+        $effect = KleisliEffect::prompt(
+            KleisliEffect::arr(fn ($x) => IOMonad::pure(1 + $x))
+                ->andThen(KleisliEffect::control(function (callable $k) {
+                    return call_user_func($k, 3);
+                }))
+        );
+        $reifiedArrow = $this->handleEffect($effect);
+        $result = $reifiedArrow->run(null);
+        $this->assertEquals(4, $result->unwrapSuccess($this->createClosureNotCalled()));
+    }
+
+    public function testExample2()
+    {
+        // (prompt
+        //   (+ 1 (control k (let ([x (k 1)] [y (k 2)])
+        //                      (k (* x y))))))
+        // Hence, the final result of that program is 1+2*3=7.
+
+        $effect = KleisliEffect::prompt(
+            KleisliEffect::arr(fn ($x) => IOMonad::pure(1 + $x))
+                ->andThen(
+                    KleisliEffect::control(
+                        function (callable $k) {
+                            $x = call_user_func($k, 1); // returns a thunk (effects)
+                            $y = call_user_func($k, 2); // returns a thunk (effects)
+                            $result = fn ($x, $y) => call_user_func($k, $x * $y);
+
+                            return KleisliEffect::arr(fn () => IOMonad::pure(Tuple::create(null, null)))
+                                // @phpstan-ignore argument.type
+                                ->andThen(KleisliEffect::merge($x, $y))
+                                ->flatmap(fn (Tuple $x) => $result($x->fst(), $x->snd()))
+                            ;
+                        }
+                    )
+                )
+        );
+
+        $reifiedArrow = $this->handleEffect($effect);
+        $result = $reifiedArrow->run(null);
+        $this->assertEquals(7, $result->unwrapSuccess($this->createClosureNotCalled()));
     }
 }
