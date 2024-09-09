@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Effect\Effects;
+namespace Zodimo\DCF\Effect\Effects\State;
 
 use Zodimo\Arrow\KleisliIO;
 use Zodimo\BaseReturn\IOMonad;

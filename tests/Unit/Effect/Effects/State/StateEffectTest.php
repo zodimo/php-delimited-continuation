@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Tests\Unit\Effect\Effects;
+namespace Zodimo\DCF\Tests\Unit\Effect\Effects\State;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\DCF\Effect\Effects\StateEffect;
+use Zodimo\DCF\Effect\Effects\State\StateEffect;
 
 /**
  * @internal

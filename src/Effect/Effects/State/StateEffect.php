@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Effect\Effects;
+namespace Zodimo\DCF\Effect\Effects\State;
 
 use Zodimo\BaseReturn\Tuple;
 use Zodimo\DCF\Effect\EffectInterface;

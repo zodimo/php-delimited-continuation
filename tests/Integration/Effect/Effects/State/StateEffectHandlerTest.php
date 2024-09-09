@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Tests\Integration\Effect\Effects;
+namespace Zodimo\DCF\Tests\Integration\Effect\Effects\State;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\BaseReturn\Tuple;
-use Zodimo\DCF\Effect\Effects\StateEffect;
-use Zodimo\DCF\Effect\Effects\StateEffectHandler;
+use Zodimo\DCF\Effect\Effects\State\StateEffect;
+use Zodimo\DCF\Effect\Effects\State\StateEffectHandler;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
 use Zodimo\DCF\Effect\Router\BasicEffectRouter;
