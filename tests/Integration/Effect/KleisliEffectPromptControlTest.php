@@ -208,16 +208,12 @@ class KleisliEffectPromptControlTest extends TestCase
                         ->andThen(
                             KleisliEffect::control(
                                 function (callable $k) {
-                                    $stubWith = function (KleisliEffect $effect, $stubbedInput) {
-                                        return $effect->stubInput($stubbedInput);
-                                    };
-
                                     // all the effect will be run when k is called...
                                     /**
                                      * @var KleisliEffect $testEffect
                                      */
-                                    $testEffect = call_user_func($k, KleisliEffect::id());
-                                    $cond = $stubWith($testEffect, 0)->andThen(KleisliEffect::liftPure(fn ($value) => $value > 200));
+                                    $testEffect = call_user_func($k, 0);
+                                    $cond = $testEffect->andThen(KleisliEffect::liftPure(fn ($value) => $value > 200));
                                     $then = KleisliEffect::liftPure(fn ($x) => $x - 50);
                                     $else = KleisliEffect::liftPure(fn ($x) => $x + 20);
 
