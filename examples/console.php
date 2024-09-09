@@ -3,9 +3,9 @@
 declare(strict_types=1);
 use Zodimo\BaseReturn\IOMonad;
 use Zodimo\BaseReturn\Tuple;
-use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
+use Zodimo\DCF\Effect\Router\BasicEffectRouter;
 
 require __DIR__.'/../vendor/autoload.php';
 
@@ -68,7 +68,7 @@ $readLineEffect = KleisliEffect::liftImpure(function () {
 
 $programEffect = $writeLine('Please write your name: ')->andThen($readLineEffect);
 
-$runtime = BasicRuntime::create([KleisliEffect::class => new KleisliEffectHandler()]);
+$runtime = BasicEffectRouter::create([KleisliEffect::class => new KleisliEffectHandler()]);
 $programArrow = $runtime->perform($programEffect);
 $programArrow->run(null)->match(
     function (Tuple $result) {

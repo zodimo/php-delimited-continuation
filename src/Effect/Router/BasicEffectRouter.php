@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Effect;
+namespace Zodimo\DCF\Effect\Router;
 
 use Zodimo\Arrow\KleisliIO;
 use Zodimo\BaseReturn\Option;
+use Zodimo\DCF\Effect\EffectInterface;
+use Zodimo\DCF\Effect\EffectRouter;
 
-class BasicRuntime implements Runtime
+class BasicEffectRouter implements EffectRouter
 {
     /**
      * @var array<string, KleisliEffectHandlerInterface>
@@ -42,12 +44,12 @@ class BasicRuntime implements Runtime
     public function perform(EffectInterface $effect)
     {
         $tag = $effect->getTag();
-        $runtime = $this;
+        $router = $this;
 
         return $this->getHandlerForEffect(get_class($effect))
             ->match(
-                function ($handler) use ($effect, $runtime) {
-                    return $handler->handle($effect, $runtime);
+                function ($handler) use ($effect, $router) {
+                    return $handler->handle($effect, $router);
                 },
                 function () use ($tag) {
                     throw new \RuntimeException(__CLASS__." :Handler for {$tag} not found.");

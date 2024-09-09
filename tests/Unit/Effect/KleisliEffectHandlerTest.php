@@ -6,9 +6,9 @@ namespace Zodimo\DCF\Tests\Unit\Effect;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\BaseReturn\IOMonad;
+use Zodimo\DCF\Effect\EffectRouter;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
-use Zodimo\DCF\Effect\Runtime;
 use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
@@ -28,7 +28,7 @@ class KleisliEffectHandlerTest extends TestCase
 
     public function testCanHandlerId()
     {
-        $runtime = $this->createMock(Runtime::class);
+        $runtime = $this->createMock(EffectRouter::class);
         $handler = new KleisliEffectHandler();
 
         $arrow = $handler->handle(KleisliEffect::id(), $runtime);
@@ -40,7 +40,7 @@ class KleisliEffectHandlerTest extends TestCase
     public function testCanHandlerArr()
     {
         $func = fn (int $a) => IOMonad::pure($a);
-        $runtime = $this->createMock(Runtime::class);
+        $runtime = $this->createMock(EffectRouter::class);
         $handler = new KleisliEffectHandler();
 
         $arrow = $handler->handle(KleisliEffect::arr($func), $runtime);

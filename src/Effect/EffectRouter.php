@@ -6,7 +6,7 @@ namespace Zodimo\DCF\Effect;
 
 use Zodimo\Arrow\KleisliIO;
 
-interface Runtime
+interface EffectRouter
 {
     /**
      * @template _INPUT

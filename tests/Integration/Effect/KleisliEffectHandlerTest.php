@@ -8,9 +8,9 @@ use PHPUnit\Framework\TestCase;
 use Zodimo\BaseReturn\Either;
 use Zodimo\BaseReturn\IOMonad;
 use Zodimo\BaseReturn\Tuple;
-use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
+use Zodimo\DCF\Effect\Router\BasicEffectRouter;
 use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
@@ -28,7 +28,7 @@ class KleisliEffectHandlerTest extends TestCase
 
         $eff = KleisliEffect::arr($func);
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle(KleisliEffect::first($eff), $runtime);
         $result = $arrow->run(Tuple::create(10, 'Joe'));
@@ -42,7 +42,7 @@ class KleisliEffectHandlerTest extends TestCase
 
         $eff = KleisliEffect::arr($func);
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle(KleisliEffect::second($eff), $runtime);
         $result = $arrow->run(Tuple::create('Joe', 10));
@@ -59,7 +59,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effectG = KleisliEffect::arr($funcG);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrowComposed = $handler->handle(KleisliEffect::compose($effectF, $effectG), $runtime);
 
@@ -77,7 +77,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effectG = KleisliEffect::arr($funcG);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrowMerged = $handler->handle(KleisliEffect::merge($effectF, $effectG), $runtime);
         $result = $arrowMerged->run(Tuple::create(20, 30));
@@ -94,7 +94,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effectG = KleisliEffect::arr($funcG);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrowSplit = $handler->handle(KleisliEffect::split($effectF, $effectG), $runtime);
 
@@ -115,7 +115,7 @@ class KleisliEffectHandlerTest extends TestCase
         $composedEffectL2 = KleisliEffect::compose($effectF, $composedEffectL1);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrowComposed = $handler->handle($composedEffectL2, $runtime);
 
@@ -134,7 +134,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effectAddOne = KleisliEffect::arr($funcF);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrowOneComposed = KleisliEffect::id();
 
@@ -155,7 +155,7 @@ class KleisliEffectHandlerTest extends TestCase
 
         $eff = KleisliEffect::liftPure($func);
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($eff, $runtime);
         $result = $arrow->run(10);
@@ -169,7 +169,7 @@ class KleisliEffectHandlerTest extends TestCase
 
         $eff = KleisliEffect::liftImpure($func);
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($eff, $runtime);
         $result = $arrow->run(10);
@@ -186,7 +186,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effect = $acquireEffect->bracket($duringEffect, $releaseEffect);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
 
@@ -213,7 +213,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effect = $arrow->flatMap($choice);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
 
@@ -227,7 +227,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effect = $baseEffect->stubInput(10);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
         $this->assertEquals(10, $arrow->run(null)->unwrapSuccess($this->createClosureNotCalled()));
@@ -241,7 +241,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effect = KleisliEffect::ifThenElse($cond, $then, $else);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
         $this->assertEquals(29, $arrow->run(9)->unwrapSuccess($this->createClosureNotCalled()), '9 < 10, 9 + 20');
@@ -255,7 +255,7 @@ class KleisliEffectHandlerTest extends TestCase
 
         $effect = KleisliEffect::choice($onLeft, $onRight);
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
         $this->assertEquals(29, $arrow->run(Either::left(9))->unwrapSuccess($this->createClosureNotCalled()), '9 < 10, 9 + 20');
@@ -268,7 +268,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effect = KleisliEffect::prompt($innerEffect);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
         $this->assertEquals(10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));
@@ -280,7 +280,7 @@ class KleisliEffectHandlerTest extends TestCase
         $effect = KleisliEffect::reset($innerEffect);
 
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         $arrow = $handler->handle($effect, $runtime);
         $this->assertEquals(10, $arrow->run(10)->unwrapSuccess($this->createClosureNotCalled()));

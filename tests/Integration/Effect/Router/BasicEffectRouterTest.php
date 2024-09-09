@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Tests\Integration\Effect;
+namespace Zodimo\DCF\Tests\Integration\Effect\Router;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
+use Zodimo\DCF\Effect\Router\BasicEffectRouter;
 use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
@@ -15,19 +15,19 @@ use Zodimo\DCF\Tests\MockClosureTrait;
  *
  * @coversNothing
  */
-class BasicRuntimeTest extends TestCase
+class BasicEffectRouterTest extends TestCase
 {
     use MockClosureTrait;
 
     public function testCanCreate()
     {
-        $runtime = BasicRuntime::create([]);
-        $this->assertInstanceOf(BasicRuntime::class, $runtime);
+        $runtime = BasicEffectRouter::create([]);
+        $this->assertInstanceOf(BasicEffectRouter::class, $runtime);
     }
 
     public function testCanPerformEffect()
     {
-        $runtime = BasicRuntime::create([KleisliEffect::class => new KleisliEffectHandler()]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => new KleisliEffectHandler()]);
 
         $arrow = $runtime->perform(KleisliEffect::id());
         $result = $arrow->run(10);

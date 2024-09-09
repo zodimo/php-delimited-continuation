@@ -6,9 +6,9 @@ namespace Zodimo\DCF\Tests\Integration\Effect;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\Arrow\KleisliIO;
-use Zodimo\DCF\Effect\BasicRuntime;
 use Zodimo\DCF\Effect\KleisliEffect;
 use Zodimo\DCF\Effect\KleisliEffectHandler;
+use Zodimo\DCF\Effect\Router\BasicEffectRouter;
 use Zodimo\DCF\Tests\MockClosureTrait;
 
 /**
@@ -40,7 +40,7 @@ class CCTest extends TestCase
     public function handleEffect(KleisliEffect $effect): KleisliIO
     {
         $handler = new KleisliEffectHandler();
-        $runtime = BasicRuntime::create([KleisliEffect::class => $handler]);
+        $runtime = BasicEffectRouter::create([KleisliEffect::class => $handler]);
 
         return $handler->handle($effect, $runtime);
     }

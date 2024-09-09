@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\DCF\Effect;
+namespace Zodimo\DCF\Effect\Router;
 
 use Zodimo\Arrow\KleisliIO;
+use Zodimo\DCF\Effect\EffectInterface;
+use Zodimo\DCF\Effect\EffectRouter;
 
 interface KleisliEffectHandlerInterface
 {
@@ -17,5 +19,5 @@ interface KleisliEffectHandlerInterface
      *
      * @return KleisliIO<INPUT,OUTPUT,ERR>
      */
-    public function handle(EffectInterface $effect, Runtime $runtime): KleisliIO;
+    public function handle(EffectInterface $effect, EffectRouter $router): KleisliIO;
 }

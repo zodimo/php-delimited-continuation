@@ -7,6 +7,7 @@ namespace Zodimo\DCF\Effect;
 use Zodimo\Arrow\KleisliIO;
 use Zodimo\Arrow\KleisliIOComposition;
 use Zodimo\Arrow\KleisliIOOps;
+use Zodimo\DCF\Effect\Router\KleisliEffectHandlerInterface;
 
 /**
  * reify the kleisli arrow from effect.
@@ -22,7 +23,7 @@ class KleisliEffectHandler implements KleisliEffectHandlerInterface
      *
      * @return KleisliIO<INPUT,OUTPUT,ERR>
      */
-    public function handle(EffectInterface $effect, Runtime $runtime): KleisliIO
+    public function handle(EffectInterface $effect, EffectRouter $runtime): KleisliIO
     {
         $tag = $effect->getTag();
 
