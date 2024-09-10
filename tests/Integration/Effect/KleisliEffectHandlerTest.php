@@ -138,15 +138,13 @@ class KleisliEffectHandlerTest extends TestCase
 
         $arrowOneComposed = KleisliEffect::id();
 
-        foreach (range(0, 9) as $_) {
+        foreach (range(0, 999) as $_) {
             $arrowOneComposed = KleisliEffect::compose($arrowOneComposed, $effectAddOne);
         }
         $composedArrow = $handler->handle($arrowOneComposed, $runtime);
         $result = $composedArrow->run(0);
-        $expectedResult = 10;
+        $expectedResult = 1000;
         $this->assertEquals($expectedResult, $result->unwrapSuccess($this->createClosureNotCalled()));
-        // print_r($arrowOneComposed);
-        $this->assertEquals(1, 1);
     }
 
     public function testCanHandleLiftPure()
