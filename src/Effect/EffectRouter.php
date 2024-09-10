@@ -17,5 +17,5 @@ interface EffectRouter
      *
      * @return KleisliIO<_INPUT, _OUTPUT, _ERR>
      */
-    public function perform(EffectInterface $effect);
+    public function perform(EffectInterface $effect): KleisliIO;
 }
